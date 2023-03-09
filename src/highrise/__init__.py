@@ -22,7 +22,11 @@ class BaseBot:
     highrise: Highrise
 
     async def on_start(self, session_metadata: SessionMetadata) -> None:
-        """On a connection to the room being established."""
+        """On a connection to the room being established.
+
+        This may be called multiple times, since the connection may be dropped
+        and reestablished.
+        """
         pass
 
     async def on_chat(self, user_id: str, username: str, message: str) -> None:
