@@ -4,7 +4,6 @@ from asyncio import TaskGroup
 from asyncio import run as arun
 from asyncio import sleep
 from importlib import import_module
-from json import loads
 from math import ceil
 from os import environ, getcwd
 from sys import path
@@ -17,10 +16,30 @@ from cattrs.strategies import configure_tagged_union
 from click import argument, command
 
 from . import BaseBot, Highrise
-from .models import ChatEvent, Error, SessionMetadata
+from .models import (
+    ChannelEvent,
+    ChatEvent,
+    Error,
+    GetRoomUsersResponse,
+    SessionMetadata,
+    TipReactionEvent,
+    UserJoinedEvent,
+    UserLeftEvent,
+)
 
 converter = make_converter()
+
+Incoming = (
+    Error
+    | GetRoomUsersResponse
+    | ChatEvent
+    | UserJoinedEvent
+    | UserLeftEvent
+    | ChannelEvent
+    | TipReactionEvent
+)
 configure_tagged_union(SessionMetadata | Error, converter)
+configure_tagged_union(Incoming, converter)
 
 
 @command()
@@ -61,8 +80,8 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                                     return
 
                         ka_task = tg.create_task(send_keepalive())
-                        session_metadata = converter.loads(
-                            await ws.receive_str(), SessionMetadata | Error
+                        session_metadata: SessionMetadata | Error = converter.loads(
+                            await ws.receive_str(), SessionMetadata | Error  # type: ignore
                         )
                         if isinstance(session_metadata, Error):
                             print(f"ERROR: {session_metadata}")
@@ -79,48 +98,28 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                             if isinstance(frame.data, WebSocketError):
                                 print("Websocket error, exiting.")
                                 return
-                            msg = loads(frame.data)
+                            msg: Incoming = converter.loads(frame.data, Incoming)  # type: ignore
                             match msg:
-                                case {"rid": rid} if rid is not None and int(
-                                    rid
-                                ) in chat._req_id_registry:
+                                case GetRoomUsersResponse(
+                                    rid=rid, content=content
+                                ) if int(rid) in chat._req_id_registry:
                                     queue = chat._req_id_registry.pop(int(rid))
-                                    queue.put_nowait(msg["content"])
-                                case {
-                                    "_type": "ChatEvent",
-                                    "message": message,
-                                    "user": {"id": user_id, "username": username},
-                                    "whisper": whisper,
-                                }:
-                                    if user_id == bot_id:
+                                    queue.put_nowait(content)
+                                case ChatEvent(
+                                    message=message, user=user, whisper=whisper
+                                ):
+                                    if user.id == bot_id:
                                         continue
                                     if bool(whisper):
-                                        tg.create_task(
-                                            bot.on_whisper(user_id, username, message)
-                                        )
+                                        tg.create_task(bot.on_whisper(user, message))
                                     else:
-                                        tg.create_task(
-                                            bot.on_chat(user_id, username, message)
-                                        )
-                                case {
-                                    "_type": "UserJoinedEvent",
-                                    "user": {"id": user_id, "username": username},
-                                }:
-                                    await bot.on_user_join(user_id, username)
-                                case {
-                                    "_type": "TipReactionEvent",
-                                    "user": tip_sender,
-                                    "receiver": tip_receiver,
-                                    "tip": tip,
-                                }:
-                                    await bot.on_tip(
-                                        tip_sender["id"],
-                                        tip_sender["username"],
-                                        tip_receiver["id"],
-                                        tip_receiver["username"],
-                                        tip["type"],
-                                        int(tip["amount"]),
-                                    )
+                                        tg.create_task(bot.on_chat(user, message))
+                                case UserJoinedEvent(user=user):
+                                    await bot.on_user_join(user)
+                                case TipReactionEvent(
+                                    sender=sender, receiver=receiver, item=tip
+                                ):
+                                    await bot.on_tip(sender, receiver, tip)
             except (ConnectionResetError, WSServerHandshakeError):
                 # The throttler should kick in up-code.
                 print("ERROR")

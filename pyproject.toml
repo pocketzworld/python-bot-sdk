@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "highrise-bot-sdk"
 version = "23.1.0.b0"
-description = ""
+description = "The Highrise Bot SDK, for running Highrise bots written in Python."
 authors = ["Pocket Worlds Inc <server@high.rs>"]
 license = "proprietary"
 readme = "README.md"
@@ -18,11 +18,15 @@ cattrs = { git = "https://github.com/python-attrs/cattrs.git", branch = "main" }
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
 isort = "^5.12.0"
-mypy = "^1.0.1"
+mypy = "^1.1.1"
+flake8 = "^6.0.0"
 
 
 [tool.poetry.scripts]
 highrise = "highrise.__main__:run"
+
+[tool.isort]
+profile = "black"
 
 
 [build-system]

@@ -7,7 +7,9 @@ from typing import Any, Callable, Literal
 
 from aiohttp import ClientWebSocketResponse
 
-from .models import SessionMetadata
+from .models import Item, SessionMetadata, User
+
+__all__ = ["BaseBot", "Highrise", "User"]
 
 
 class BaseBot:
@@ -29,27 +31,19 @@ class BaseBot:
         """
         pass
 
-    async def on_chat(self, user_id: str, username: str, message: str) -> None:
+    async def on_chat(self, user: User, message: str) -> None:
         """On a received room-wide chat."""
         pass
 
-    async def on_whisper(self, user_id: str, username: str, message: str) -> None:
+    async def on_whisper(self, user: User, message: str) -> None:
         """On a received room whisper."""
         pass
 
-    async def on_user_join(self, user_id: str, username: str) -> None:
+    async def on_user_join(self, user: User) -> None:
         """On a user joining the room."""
         pass
 
-    async def on_tip(
-        self,
-        sender_id: str,
-        sender_username: str,
-        receiver_id: str,
-        receiver_username: str,
-        tip_type: str,
-        tip_amount: int,
-    ) -> None:
+    async def on_tip(self, sender: User, receiver: User, tip: Item) -> None:
         """On a tip received in the room."""
         pass
 
@@ -104,9 +98,9 @@ class Highrise:
         return await q.get()
 
     def call_in(self, callback: Callable, delay: float) -> None:
-        self.tg.create_task(self._delayed_callback(callback, delay))
+        self.tg.create_task(_delayed_callback(callback, delay))
 
-    @staticmethod
-    async def _delayed_callback(callback: Callable, delay: float) -> None:
-        await sleep(delay)
-        await callback()
+
+async def _delayed_callback(callback: Callable, delay: float) -> None:
+    await sleep(delay)
+    await callback()
