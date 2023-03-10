@@ -12,10 +12,10 @@ from typing import Any, AsyncGenerator
 
 from aiohttp import ClientSession, WebSocketError, WSServerHandshakeError
 from cattrs.preconf.json import make_converter
-from cattrs.strategies import configure_tagged_union
 from click import argument, command
 
 from . import BaseBot, Highrise
+from ._unions import configure_tagged_union
 from .models import (
     ChannelEvent,
     ChatEvent,

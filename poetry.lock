@@ -205,22 +205,18 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "cattrs"
-version = "23.1.0.dev0"
+version = "22.2.0"
 description = "Composable complex class support for attrs and dataclasses."
 category = "main"
 optional = false
-python-versions = ">= 3.7"
-files = []
-develop = false
+python-versions = ">=3.7"
+files = [
+    {file = "cattrs-22.2.0-py3-none-any.whl", hash = "sha256:bc12b1f0d000b9f9bee83335887d532a1d3e99a833d1bf0882151c97d3e68c21"},
+    {file = "cattrs-22.2.0.tar.gz", hash = "sha256:f0eed5642399423cf656e7b66ce92cdc5b963ecafd041d1b24d136fdde7acf6d"},
+]
 
 [package.dependencies]
-attrs = ">= 20"
-
-[package.source]
-type = "git"
-url = "https://github.com/python-attrs/cattrs.git"
-reference = "main"
-resolved_reference = "7c37e53f6d96168026a31c575e4c0a57557b84eb"
+attrs = ">=20"
 
 [[package]]
 name = "charset-normalizer"
@@ -786,4 +782,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "08c679a0819881ceb86f9fbbb6776ad161233b7cbe6cebd4b62b39c26c7c8367"
+content-hash = "3247151eddfeb32395df5c002e6fbdc6abc3ebce832875e8676ff51f474e7d24"
