@@ -1,4 +1,4 @@
-from typing import Literal, TypeAlias
+from typing import ClassVar, Literal, TypeAlias
 
 from attrs import Factory, define
 
@@ -36,12 +36,14 @@ class ChatRequest:
 
 @define
 class IndicatorRequest:
-    """
-    Set the bot indicator to the provided icon, or clear it.
-
-    """
-
     icon: str | None = None
+    rid: str | None = None
+
+    @define
+    class IndicatorResponse:
+        rid: str | None = None
+
+    Response: ClassVar = IndicatorResponse
 
 
 @define
@@ -53,9 +55,18 @@ class ChannelRequest:
     communicate between bots or client-side scripts.
     """
 
-    msg: str
-    tags: list[str] = Factory(list)
+    message: str
+    tags: set[str] = Factory(set)
     only_to: set[str] | None = None
+    rid: str | None = None
+
+    @define
+    class ChannelResponse:
+        """The successful response to a `ChannelRequest."""
+
+        rid: str | None = None
+
+    Response: ClassVar = ChannelResponse
 
 
 @define
@@ -88,6 +99,15 @@ class TeleportRequest:
 
     user_id: str
     destination: Position
+    rid: str | None = None
+
+    @define
+    class TeleportResponse:
+        """The successful response to a `TeleportRequest`."""
+
+        rid: str | None = None
+
+    Response: ClassVar = TeleportResponse
 
 
 @define
@@ -125,7 +145,7 @@ class GetRoomUsersResponse:
 @define
 class SessionMetadata:
     """
-    Initial data.
+    Initial session data.
 
     This will be sent once, as the first message when a connection is established.
     """
@@ -142,6 +162,17 @@ class ChatEvent:
     user: User
     message: str
     whisper: bool
+
+
+@define
+class EmoteEvent:
+    """
+    An emote event, performed by a `user` in the room.
+    """
+
+    user: User
+    emote_id: str
+    receiver: User | None = None
 
 
 @define

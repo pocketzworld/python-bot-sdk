@@ -11,35 +11,19 @@ from time import monotonic
 from typing import Any, AsyncGenerator
 
 from aiohttp import ClientSession, WebSocketError, WSServerHandshakeError
-from cattrs.preconf.json import make_converter
 from click import argument, command
 
-from . import BaseBot, Highrise
-from ._unions import configure_tagged_union
+from . import BaseBot, Highrise, Incoming, converter
 from .models import (
-    ChannelEvent,
     ChatEvent,
+    EmoteEvent,
     Error,
     GetRoomUsersResponse,
+    IndicatorRequest,
     SessionMetadata,
     TipReactionEvent,
     UserJoinedEvent,
-    UserLeftEvent,
 )
-
-converter = make_converter()
-
-Incoming = (
-    Error
-    | GetRoomUsersResponse
-    | ChatEvent
-    | UserJoinedEvent
-    | UserLeftEvent
-    | ChannelEvent
-    | TipReactionEvent
-)
-configure_tagged_union(SessionMetadata | Error, converter)
-configure_tagged_union(Incoming, converter)
 
 
 @command()
@@ -93,27 +77,39 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                         chat.tg = tg
 
                         bot.highrise = chat
-                        await bot.on_start(session_metadata)
+                        tg.create_task(bot.on_start(session_metadata))
                         async for frame in ws:
                             if isinstance(frame.data, WebSocketError):
                                 print("Websocket error, exiting.")
                                 return
                             msg: Incoming = converter.loads(frame.data, Incoming)  # type: ignore
                             match msg:
+                                case Error(rid=rid) if rid in chat._req_id_registry:
+                                    chat._req_id_registry.pop(rid).put_nowait(msg)
+                                case IndicatorRequest.IndicatorResponse(
+                                    rid=rid
+                                ) if rid in chat._req_id_registry:
+                                    chat._req_id_registry.pop(rid).put_nowait(None)
                                 case GetRoomUsersResponse(
                                     rid=rid, content=content
                                 ) if int(rid) in chat._req_id_registry:
-                                    queue = chat._req_id_registry.pop(int(rid))
+                                    queue = chat._req_id_registry.pop(rid)
                                     queue.put_nowait(content)
                                 case ChatEvent(
                                     message=message, user=user, whisper=whisper
                                 ):
                                     if user.id == bot_id:
                                         continue
-                                    if bool(whisper):
+                                    if whisper:
                                         tg.create_task(bot.on_whisper(user, message))
                                     else:
                                         tg.create_task(bot.on_chat(user, message))
+                                case EmoteEvent(
+                                    user=user, emote_id=emote_id, receiver=receiver
+                                ):
+                                    tg.create_task(
+                                        bot.on_emote(user, emote_id, receiver)
+                                    )
                                 case UserJoinedEvent(user=user):
                                     await bot.on_user_join(user)
                                 case TipReactionEvent(
@@ -127,7 +123,7 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
 
 
 async def throttler(
-    drops: int = 10, drop_recharge: float = 5.0
+    drops: int = 10, drop_recharge: float = 1.0
 ) -> AsyncGenerator[Any, None]:
     next_full = monotonic()
     while True:
