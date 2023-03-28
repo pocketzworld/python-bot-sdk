@@ -113,7 +113,9 @@ class Highrise:
     ) -> IndicatorRequest.Response | Error:
         return await do_req_resp(self, IndicatorRequest(icon))
 
-    async def send_channel(self, message: str, tags: set[str] = set()) -> None:
+    async def send_channel(
+        self, message: str, tags: set[str] = set()
+    ) -> ChannelRequest.ChannelResponse | Error:
         return await do_req_resp(self, ChannelRequest(message, tags))
 
     async def walk_to(

@@ -29,3 +29,13 @@ When you're ready, run the bot from the terminal using the SDK, giving it the Py
 ```
 $ highrise mybot:Bot <room ID> <API token>
 ```
+
+## Changelog
+
+### 23.1.0.b1 (2023-03-28)
+
+- Add support for emotes and hidden channel messages.
+
+### 23.1.0.b0 (2023-03-10)
+
+- Initial beta release.
