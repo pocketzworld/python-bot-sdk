@@ -15,6 +15,7 @@ from click import argument, command
 
 from . import BaseBot, Highrise, Incoming, converter
 from .models import (
+    ChannelEvent,
     ChatEvent,
     EmoteEvent,
     Error,
@@ -23,6 +24,7 @@ from .models import (
     SessionMetadata,
     TipReactionEvent,
     UserJoinedEvent,
+    UserLeftEvent,
 )
 
 
@@ -104,6 +106,12 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                                         tg.create_task(bot.on_whisper(user, message))
                                     else:
                                         tg.create_task(bot.on_chat(user, message))
+                                case ChannelEvent(
+                                    sender_id=channel_sender_id, msg=message, tags=tags
+                                ):
+                                    tg.create_task(
+                                        bot.on_channel(channel_sender_id, message, tags)
+                                    )
                                 case EmoteEvent(
                                     user=user, emote_id=emote_id, receiver=receiver
                                 ):
@@ -111,11 +119,13 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                                         bot.on_emote(user, emote_id, receiver)
                                     )
                                 case UserJoinedEvent(user=user):
-                                    await bot.on_user_join(user)
+                                    tg.create_task(bot.on_user_join(user))
+                                case UserLeftEvent():
+                                    tg.create_task(bot.on_user_leave(user))
                                 case TipReactionEvent(
                                     sender=sender, receiver=receiver, item=tip
                                 ):
-                                    await bot.on_tip(sender, receiver, tip)
+                                    tg.create_task(bot.on_tip(sender, receiver, tip))
             except (ConnectionResetError, WSServerHandshakeError):
                 # The throttler should kick in up-code.
                 print("ERROR")

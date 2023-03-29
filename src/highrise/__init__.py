@@ -76,11 +76,15 @@ class BaseBot:
         """On a user joining the room."""
         pass
 
+    async def on_user_leave(self, user: User) -> None:
+        """On a user leaving the room."""
+        pass
+
     async def on_tip(self, sender: User, receiver: User, tip: Item) -> None:
         """On a tip received in the room."""
         pass
 
-    async def on_channel(self, message: str, tags: set[str]) -> None:
+    async def on_channel(self, sender_id: str, message: str, tags: set[str]) -> None:
         """On a hidden channel message."""
         pass
 

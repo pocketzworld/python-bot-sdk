@@ -190,7 +190,7 @@ class UserLeftEvent:
     A user has left the room.
     """
 
-    user_id: str
+    user: User
 
 
 @define
