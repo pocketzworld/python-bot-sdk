@@ -111,7 +111,9 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                                     sender_id=channel_sender_id, msg=message, tags=tags
                                 ):
                                     tg.create_task(
-                                        bot.on_channel(channel_sender_id, message, tags)
+                                        bot.on_channel(
+                                            channel_sender_id, message, set(tags)
+                                        )
                                     )
                                 case EmoteEvent(
                                     user=user, emote_id=emote_id, receiver=receiver

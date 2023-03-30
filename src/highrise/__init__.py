@@ -119,7 +119,9 @@ class Highrise:
             payload["target_user_id"] = target_user_id
         await self.ws.send_json(payload)
 
-    async def react(self, reaction: Reaction, target_user_id: str) -> None:
+    async def react(
+        self, reaction: Reaction, target_user_id: str
+    ) -> ReactionRequest.ReactionResponse | Error:
         """
         Send a reaction to a user in the room.
 
