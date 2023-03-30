@@ -34,6 +34,7 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ### 23.1.0.b2 (UNRELEASED)
 
+- Add support for receiving and sending reactions.
 - Fix support for hidden channels.
 - Migrate to the new message for avatars leaving.
 - Improve concurrency when awaiting bot methods.

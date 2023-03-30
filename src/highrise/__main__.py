@@ -21,6 +21,7 @@ from .models import (
     Error,
     GetRoomUsersResponse,
     IndicatorRequest,
+    ReactionEvent,
     SessionMetadata,
     TipReactionEvent,
     UserJoinedEvent,
@@ -118,9 +119,15 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                                     tg.create_task(
                                         bot.on_emote(user, emote_id, receiver)
                                     )
+                                case ReactionEvent(
+                                    user=user, reaction=reaction, receiver=receiver
+                                ):
+                                    tg.create_task(
+                                        bot.on_reaction(user, reaction, receiver)
+                                    )
                                 case UserJoinedEvent(user=user):
                                     tg.create_task(bot.on_user_join(user))
-                                case UserLeftEvent():
+                                case UserLeftEvent(user=user):
                                     tg.create_task(bot.on_user_leave(user))
                                 case TipReactionEvent(
                                     sender=sender, receiver=receiver, item=tip

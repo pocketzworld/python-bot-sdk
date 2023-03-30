@@ -20,6 +20,9 @@ from .models import (
     IndicatorRequest,
     Item,
     Position,
+    Reaction,
+    ReactionEvent,
+    ReactionRequest,
     SessionMetadata,
     TeleportRequest,
     TipReactionEvent,
@@ -36,7 +39,7 @@ else:
         pass
 
 
-__all__ = ["BaseBot", "Highrise", "User", "Position"]
+__all__ = ["BaseBot", "Highrise", "User", "Position", "Reaction"]
 A = TypeVar("A", bound=AttrsInstance)
 T = TypeVar("T")
 
@@ -70,6 +73,10 @@ class BaseBot:
 
     async def on_emote(self, user: User, emote_id: str, receiver: User | None) -> None:
         """On a received emote."""
+        pass
+
+    async def on_reaction(self, user: User, reaction: Reaction, receiver: User) -> None:
+        """Called when someone reacts in the room."""
         pass
 
     async def on_user_join(self, user: User) -> None:
@@ -111,6 +118,19 @@ class Highrise:
         if target_user_id is not None:
             payload["target_user_id"] = target_user_id
         await self.ws.send_json(payload)
+
+    async def react(self, reaction: Reaction, target_user_id: str) -> None:
+        """
+        Send a reaction to a user in the room.
+
+        A reaction can be one of the following:
+        * 'clap'
+        * 'heart'
+        * 'thumbs'
+        * 'wave'
+        * 'wink'
+        """
+        return await do_req_resp(self, ReactionRequest(reaction, target_user_id))
 
     async def set_indicator(
         self, icon: str | None
@@ -183,11 +203,13 @@ Incoming = (
     | GetRoomUsersResponse
     | ChatEvent
     | EmoteEvent
+    | ReactionEvent
     | UserJoinedEvent
     | UserLeftEvent
     | ChannelEvent
     | TipReactionEvent
     | IndicatorRequest.IndicatorResponse
+    | ReactionRequest.ReactionResponse
     | ChannelRequest.ChannelResponse
     | TeleportRequest.TeleportResponse
 )
@@ -196,6 +218,7 @@ Outgoing = (
     | ChannelEvent
     | GetRoomUsersRequest
     | IndicatorRequest
+    | ReactionRequest
     | ChannelRequest
     | TeleportRequest
 )
