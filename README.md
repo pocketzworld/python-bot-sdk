@@ -38,6 +38,8 @@ $ highrise mybot:Bot <room ID> <API token>
 - Fix support for hidden channels.
 - Migrate to the new message for avatars leaving.
 - Improve concurrency when awaiting bot methods.
+- Fix issues with teleporting users.
+- Fix issues with user coordinates.
 
 ### 23.1.0.b1 (2023-03-28)
 

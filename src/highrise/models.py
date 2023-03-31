@@ -9,8 +9,22 @@ class User:
     username: str
 
 
-Position: TypeAlias = tuple[float, float, float]
 Reaction: TypeAlias = Literal["clap", "heart", "thumbs", "wave", "wink"]
+Facing: TypeAlias = Literal["FrontRight", "FrontLeft", "BackRight", "BackLeft"]
+
+
+@define
+class Position:
+    x: float
+    y: float
+    z: float
+    facing: Facing = "FrontRight"
+
+
+@define
+class AnchorPosition:
+    entity_id: str
+    anchor_ix: int
 
 
 @define
@@ -33,6 +47,14 @@ class ChatRequest:
 
     message: str
     whisper_target_id: str | None = None
+    rid: str | None = None
+
+    @define
+    class ChatResponse:
+        rid: str | None = None
+        """The successful response to a `ChatResponse."""
+
+    Response: ClassVar = ChatResponse
 
 
 @define
@@ -80,6 +102,15 @@ class EmoteRequest:
 
     emote_id: str
     target_user_id: str | None = None
+    rid: str | None = None
+
+    @define
+    class EmoteResponse:
+        """The successful response to a `EmoteRequest."""
+
+        rid: str | None = None
+
+    Response: ClassVar = EmoteResponse
 
 
 @define
@@ -140,7 +171,15 @@ class FloorHitRequest:
     """
 
     destination: Position
-    facing: Literal["FrontLeft", "FrontRight", "BackLeft", "BackRight"]
+    rid: str | None = None
+
+    @define
+    class FloorHitResponse:
+        """The successful response to a `TeleportRequest`."""
+
+        rid: str | None = None
+
+    Response: ClassVar = FloorHitResponse
 
 
 @define
@@ -161,7 +200,7 @@ class GetRoomUsersResponse:
     """
 
     rid: str
-    content: list[tuple[User, Position]]
+    content: list[tuple[User, Position | AnchorPosition]]
 
 
 @define

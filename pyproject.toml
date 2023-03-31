@@ -28,6 +28,17 @@ highrise = "highrise.__main__:run"
 [tool.isort]
 profile = "black"
 
+[tool.mypy]
+exclude = "src/highrise/_unions.py"
+allow_redefinition = true
+check_untyped_defs = true
+namespace_packages = true
+warn_unreachable = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_incomplete_defs = true
+strict_equality = true
+
 
 [build-system]
 requires = ["poetry-core"]

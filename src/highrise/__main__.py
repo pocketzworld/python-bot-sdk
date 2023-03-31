@@ -95,7 +95,7 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                                     chat._req_id_registry.pop(rid).put_nowait(None)
                                 case GetRoomUsersResponse(
                                     rid=rid, content=content
-                                ) if int(rid) in chat._req_id_registry:
+                                ) if rid in chat._req_id_registry:
                                     queue = chat._req_id_registry.pop(rid)
                                     queue.put_nowait(content)
                                 case ChatEvent(
