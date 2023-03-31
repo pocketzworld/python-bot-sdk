@@ -3,18 +3,21 @@ from __future__ import annotations
 
 from asyncio import Queue, TaskGroup, sleep
 from itertools import count
-from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar
 
 from aiohttp import ClientWebSocketResponse
 from cattrs.preconf.json import make_converter
 
-from ._unions import configure_tagged_union  # type: ignore
+from ._unions import configure_tagged_union
 from .models import (
     ChannelEvent,
     ChannelRequest,
     ChatEvent,
+    ChatRequest,
     EmoteEvent,
+    EmoteRequest,
     Error,
+    FloorHitRequest,
     GetRoomUsersRequest,
     GetRoomUsersResponse,
     IndicatorRequest,
@@ -102,22 +105,23 @@ class Highrise:
     _req_id = count()
     _req_id_registry: dict[str, Queue[Any]] = {}
 
-    async def chat(self, message: str) -> None:
+    async def chat(self, message: str) -> ChatRequest.ChatResponse | Error:
         """Broadcast a room-wide chat message."""
-        await self.ws.send_json({"_type": "ChatRequest", "message": message})
+        return await do_req_resp(self, ChatRequest(message=message))
 
-    async def send_whisper(self, user_id: str, message: str) -> None:
-        await self.ws.send_json(
-            {"_type": "ChatRequest", "message": message, "whisper_target_id": user_id}
+    async def send_whisper(
+        self, user_id: str, message: str
+    ) -> ChatRequest.ChatResponse | Error:
+        """Send a whisper to a user in the room."""
+        return await do_req_resp(
+            self, ChatRequest(message=message, whisper_target_id=user_id)
         )
 
     async def send_emote(
         self, emote_id: str, target_user_id: str | None = None
-    ) -> None:
-        payload = {"_type": "EmoteRequest", "emote_id": emote_id}
-        if target_user_id is not None:
-            payload["target_user_id"] = target_user_id
-        await self.ws.send_json(payload)
+    ) -> EmoteRequest.EmoteResponse | Error:
+        """Send an emote to room or a user in the room."""
+        return await do_req_resp(self, EmoteRequest(emote_id, target_user_id))
 
     async def react(
         self, reaction: Reaction, target_user_id: str
@@ -146,12 +150,9 @@ class Highrise:
 
     async def walk_to(
         self,
-        dest: tuple[float, float, float],
-        facing: Literal["FrontRight", "FrontLeft", "BackRight", "BackLeft"],
-    ) -> None:
-        await self.ws.send_json(
-            {"_type": "FloorHitRequest", "destination": dest, "facing": facing}
-        )
+        destination: Position,
+    ) -> FloorHitRequest.FloorHitResponse | Error:
+        return await do_req_resp(self, FloorHitRequest(destination))
 
     async def teleport(
         self, user_id: str, dest: Position
