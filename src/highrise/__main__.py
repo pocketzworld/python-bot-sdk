@@ -19,8 +19,6 @@ from .models import (
     ChatEvent,
     EmoteEvent,
     Error,
-    GetRoomUsersResponse,
-    IndicatorRequest,
     ReactionEvent,
     SessionMetadata,
     TipReactionEvent,
@@ -87,17 +85,10 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                                 return
                             msg: Incoming = converter.loads(frame.data, Incoming)  # type: ignore
                             match msg:
-                                case Error(rid=rid) if rid in chat._req_id_registry:
+                                case object(rid=rid):
+                                    if rid not in chat._req_id_registry:
+                                        continue
                                     chat._req_id_registry.pop(rid).put_nowait(msg)
-                                case IndicatorRequest.IndicatorResponse(
-                                    rid=rid
-                                ) if rid in chat._req_id_registry:
-                                    chat._req_id_registry.pop(rid).put_nowait(None)
-                                case GetRoomUsersResponse(
-                                    rid=rid, content=content
-                                ) if rid in chat._req_id_registry:
-                                    queue = chat._req_id_registry.pop(rid)
-                                    queue.put_nowait(content)
                                 case ChatEvent(
                                     message=message, user=user, whisper=whisper
                                 ):

@@ -20,6 +20,7 @@ from .models import (
     FloorHitRequest,
     GetRoomUsersRequest,
     GetRoomUsersResponse,
+    GetWalletRequest,
     IndicatorRequest,
     Item,
     Position,
@@ -167,6 +168,11 @@ class Highrise:
         )
         return await q.get()
 
+    async def get_wallet(self) -> GetWalletRequest.GetWalletResponse | Error:
+        """Fetch the bot wallet."""
+        req_id = str(next(self._req_id))
+        return await do_req_resp(self, GetWalletRequest(req_id))
+
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
 
@@ -215,15 +221,17 @@ Incoming = (
     | ReactionRequest.ReactionResponse
     | ChannelRequest.ChannelResponse
     | TeleportRequest.TeleportResponse
+    | GetWalletRequest.GetWalletResponse
 )
 Outgoing = (
     ChatEvent
     | ChannelEvent
-    | GetRoomUsersRequest
     | IndicatorRequest
     | ReactionRequest
     | ChannelRequest
     | TeleportRequest
+    | GetRoomUsersRequest
+    | GetWalletRequest
 )
 configure_tagged_union(SessionMetadata | Error, converter)
 configure_tagged_union(Incoming, converter)
