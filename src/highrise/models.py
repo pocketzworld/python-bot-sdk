@@ -10,6 +10,7 @@ class User:
 
 
 Position: TypeAlias = tuple[float, float, float]
+Reaction: TypeAlias = Literal["clap", "heart", "thumbs", "wave", "wink"]
 
 
 @define
@@ -79,6 +80,27 @@ class EmoteRequest:
 
     emote_id: str
     target_user_id: str | None = None
+
+
+@define
+class ReactionRequest:
+    """
+    Send a reaction to a user.
+    """
+
+    reaction: Reaction
+    target_user_id: str
+    rid: str | None = None
+
+    @define
+    class ReactionResponse:
+        """
+        A response to a successful reaction.
+        """
+
+        rid: str | None = None
+
+    Response: ClassVar = ReactionResponse
 
 
 @define
@@ -173,6 +195,17 @@ class EmoteEvent:
     user: User
     emote_id: str
     receiver: User | None = None
+
+
+@define
+class ReactionEvent:
+    """
+    A reaction event, performed by a `user` in the room.
+    """
+
+    user: User
+    reaction: Reaction
+    receiver: User
 
 
 @define
