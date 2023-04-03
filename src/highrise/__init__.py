@@ -10,6 +10,7 @@ from cattrs.preconf.json import make_converter
 
 from ._unions import configure_tagged_union
 from .models import (
+    AnchorPosition,
     ChannelEvent,
     ChannelRequest,
     ChatEvent,
@@ -43,7 +44,7 @@ else:
         pass
 
 
-__all__ = ["BaseBot", "Highrise", "User", "Position", "Reaction"]
+__all__ = ["BaseBot", "Highrise", "User", "Position", "Reaction", "AnchorPosition"]
 A = TypeVar("A", bound=AttrsInstance)
 T = TypeVar("T")
 
