@@ -220,6 +220,7 @@ Incoming = (
     | IndicatorRequest.IndicatorResponse
     | ReactionRequest.ReactionResponse
     | ChannelRequest.ChannelResponse
+    | FloorHitRequest.FloorHitResponse
     | TeleportRequest.TeleportResponse
     | GetRoomUsersRequest.GetRoomUsersResponse
     | GetWalletRequest.GetWalletResponse
@@ -230,6 +231,7 @@ Outgoing = (
     | IndicatorRequest
     | ReactionRequest
     | ChannelRequest
+    | FloorHitRequest
     | TeleportRequest
     | GetRoomUsersRequest
     | GetWalletRequest
