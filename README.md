@@ -40,6 +40,7 @@ $ highrise mybot:Bot <room ID> <API token>
 - Improve concurrency when awaiting bot methods.
 - Fix issues with teleporting users.
 - Fix issues with user coordinates.
+- Add support for fetching the bot wallet (`self.highrise.get_wallet()`).
 
 ### 23.1.0.b1 (2023-03-28)
 

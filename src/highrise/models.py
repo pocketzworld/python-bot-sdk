@@ -28,6 +28,31 @@ class AnchorPosition:
 
 
 @define
+class CurrencyItem:
+    """
+    A Highrise currency amount.
+
+    The most used currencies are:
+    * `gold`
+    * `bubbles`
+
+    Many other currencies exist, however.
+    """
+
+    type: str
+    amount: int
+
+
+@define
+class Item:
+    """A Highrise item."""
+
+    type: Literal["clothing"]
+    amount: int
+    id: str
+
+
+@define
 class Error:
     """
     The client request or parameter was invalid.
@@ -204,6 +229,28 @@ class GetRoomUsersResponse:
 
 
 @define
+class GetWalletRequest:
+    """
+    Fetch the bot's wallet.
+
+    The wallet contains Highrise currencies.
+    """
+
+    rid: str
+
+    @define
+    class GetWalletResponse:
+        """
+        The bot's wallet.
+        """
+
+        content: list[CurrencyItem]
+        rid: str
+
+    Response: ClassVar = GetWalletResponse
+
+
+@define
 class SessionMetadata:
     """
     Initial session data.
@@ -277,13 +324,6 @@ class ChannelEvent:
 
 
 @define
-class Item:
-    type: str
-    amount: int
-    id: str | None = None
-
-
-@define
 class TipReactionEvent:
     """
     The `sender` has sent `receiver` a tip (the `item`) in the current room.
@@ -291,4 +331,4 @@ class TipReactionEvent:
 
     sender: User
     receiver: User
-    item: Item
+    item: Item | CurrencyItem
