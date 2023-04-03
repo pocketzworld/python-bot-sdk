@@ -14,12 +14,12 @@ from .models import (
     ChannelRequest,
     ChatEvent,
     ChatRequest,
+    CurrencyItem,
     EmoteEvent,
     EmoteRequest,
     Error,
     FloorHitRequest,
     GetRoomUsersRequest,
-    GetRoomUsersResponse,
     GetWalletRequest,
     IndicatorRequest,
     Item,
@@ -91,7 +91,9 @@ class BaseBot:
         """On a user leaving the room."""
         pass
 
-    async def on_tip(self, sender: User, receiver: User, tip: Item) -> None:
+    async def on_tip(
+        self, sender: User, receiver: User, tip: CurrencyItem | Item
+    ) -> None:
         """On a tip received in the room."""
         pass
 
@@ -160,7 +162,7 @@ class Highrise:
     ) -> TeleportRequest.TeleportResponse | Error:
         return await do_req_resp(self, TeleportRequest(user_id, dest))
 
-    async def get_room_users(self) -> list[tuple[User, Position]]:
+    async def get_room_users(self) -> GetRoomUsersRequest.GetRoomUsersResponse | Error:
         req_id = str(next(self._req_id))
         self._req_id_registry[req_id] = (q := Queue[Any](maxsize=1))
         await self.ws.send_str(
@@ -170,8 +172,7 @@ class Highrise:
 
     async def get_wallet(self) -> GetWalletRequest.GetWalletResponse | Error:
         """Fetch the bot wallet."""
-        req_id = str(next(self._req_id))
-        return await do_req_resp(self, GetWalletRequest(req_id))
+        return await do_req_resp(self, GetWalletRequest())
 
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
@@ -209,7 +210,6 @@ converter = make_converter()
 
 Incoming = (
     Error
-    | GetRoomUsersResponse
     | ChatEvent
     | EmoteEvent
     | ReactionEvent
@@ -221,6 +221,7 @@ Incoming = (
     | ReactionRequest.ReactionResponse
     | ChannelRequest.ChannelResponse
     | TeleportRequest.TeleportResponse
+    | GetRoomUsersRequest.GetRoomUsersResponse
     | GetWalletRequest.GetWalletResponse
 )
 Outgoing = (

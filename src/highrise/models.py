@@ -216,16 +216,17 @@ class GetRoomUsersRequest:
 
     rid: str
 
+    @define
+    class GetRoomUsersResponse:
+        """
+        The list of users in the room, alongside their positions.
 
-@define
-class GetRoomUsersResponse:
-    """
-    The list of users in the room, alongside their positions.
+        """
 
-    """
+        content: list[tuple[User, Position | AnchorPosition]]
+        rid: str
 
-    rid: str
-    content: list[tuple[User, Position | AnchorPosition]]
+    Response: ClassVar = GetRoomUsersResponse
 
 
 @define
@@ -236,7 +237,7 @@ class GetWalletRequest:
     The wallet contains Highrise currencies.
     """
 
-    rid: str
+    rid: str | None = None
 
     @define
     class GetWalletResponse:

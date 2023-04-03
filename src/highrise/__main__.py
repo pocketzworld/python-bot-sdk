@@ -85,7 +85,7 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                                 return
                             msg: Incoming = converter.loads(frame.data, Incoming)  # type: ignore
                             match msg:
-                                case object(rid=rid):
+                                case object(rid=rid) if hasattr(msg, "rid"):  # type: ignore
                                     if rid not in chat._req_id_registry:
                                         continue
                                     chat._req_id_registry.pop(rid).put_nowait(msg)
