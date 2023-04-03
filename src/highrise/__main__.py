@@ -13,7 +13,7 @@ from typing import Any, AsyncGenerator
 from aiohttp import ClientSession, WebSocketError, WSServerHandshakeError
 from click import argument, command
 
-from . import BaseBot, Highrise, Incoming, converter
+from . import BaseBot, Highrise, Incoming, IncomingEvents, converter
 from .models import (
     ChannelEvent,
     ChatEvent,
@@ -83,7 +83,7 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                             if isinstance(frame.data, WebSocketError):
                                 print("Websocket error, exiting.")
                                 return
-                            msg: Incoming = converter.loads(frame.data, Incoming)  # type: ignore
+                            msg: IncomingEvents = converter.loads(frame.data, Incoming)  # type: ignore
                             match msg:
                                 case object(rid=rid) if hasattr(msg, "rid"):  # type: ignore
                                     if rid not in chat._req_id_registry:

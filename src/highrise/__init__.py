@@ -109,27 +109,23 @@ class Highrise:
     _req_id = count()
     _req_id_registry: dict[str, Queue[Any]] = {}
 
-    async def chat(self, message: str) -> ChatRequest.ChatResponse | Error:
+    async def chat(self, message: str) -> None:
         """Broadcast a room-wide chat message."""
-        return await do_req_resp(self, ChatRequest(message=message))
+        await _do_req_no_resp(self, ChatRequest(message=message))
 
-    async def send_whisper(
-        self, user_id: str, message: str
-    ) -> ChatRequest.ChatResponse | Error:
+    async def send_whisper(self, user_id: str, message: str) -> None:
         """Send a whisper to a user in the room."""
-        return await do_req_resp(
+        await _do_req_no_resp(
             self, ChatRequest(message=message, whisper_target_id=user_id)
         )
 
     async def send_emote(
         self, emote_id: str, target_user_id: str | None = None
-    ) -> EmoteRequest.EmoteResponse | Error:
+    ) -> None:
         """Send an emote to room or a user in the room."""
-        return await do_req_resp(self, EmoteRequest(emote_id, target_user_id))
+        await _do_req_no_resp(self, EmoteRequest(emote_id, target_user_id))
 
-    async def react(
-        self, reaction: Reaction, target_user_id: str
-    ) -> ReactionRequest.ReactionResponse | Error:
+    async def react(self, reaction: Reaction, target_user_id: str) -> None:
         """
         Send a reaction to a user in the room.
 
@@ -140,28 +136,19 @@ class Highrise:
         * 'wave'
         * 'wink'
         """
-        return await do_req_resp(self, ReactionRequest(reaction, target_user_id))
+        await _do_req_no_resp(self, ReactionRequest(reaction, target_user_id))
 
-    async def set_indicator(
-        self, icon: str | None
-    ) -> IndicatorRequest.Response | Error:
-        return await do_req_resp(self, IndicatorRequest(icon))
+    async def set_indicator(self, icon: str | None) -> None:
+        await _do_req_no_resp(self, IndicatorRequest(icon))
 
-    async def send_channel(
-        self, message: str, tags: set[str] = set()
-    ) -> ChannelRequest.ChannelResponse | Error:
-        return await do_req_resp(self, ChannelRequest(message, tags))
+    async def send_channel(self, message: str, tags: set[str] = set()) -> None:
+        await _do_req_no_resp(self, ChannelRequest(message, tags))
 
-    async def walk_to(
-        self,
-        destination: Position,
-    ) -> FloorHitRequest.FloorHitResponse | Error:
-        return await do_req_resp(self, FloorHitRequest(destination))
+    async def walk_to(self, destination: Position) -> None:
+        await _do_req_no_resp(self, FloorHitRequest(destination))
 
-    async def teleport(
-        self, user_id: str, dest: Position
-    ) -> TeleportRequest.TeleportResponse | Error:
-        return await do_req_resp(self, TeleportRequest(user_id, dest))
+    async def teleport(self, user_id: str, dest: Position) -> None:
+        await _do_req_no_resp(self, TeleportRequest(user_id, dest))
 
     async def get_room_users(self) -> GetRoomUsersRequest.GetRoomUsersResponse | Error:
         req_id = str(next(self._req_id))
@@ -177,6 +164,10 @@ class Highrise:
 
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
+
+
+class ResponseError(Exception):
+    """An API response error."""
 
 
 class _ClassWithId(AttrsInstance):
@@ -200,6 +191,16 @@ async def do_req_resp(hr: Highrise, req: _ReqWithId[CID]) -> CID | Error:
     hr._req_id_registry[rid] = (q := Queue[Any](maxsize=1))
     await hr.ws.send_str(converter.dumps(req, Outgoing))
     return await q.get()
+
+
+async def _do_req_no_resp(hr: Highrise, req: _ReqWithId[CID]) -> None:
+    rid = str(next(hr._req_id))
+    req.rid = rid
+    hr._req_id_registry[rid] = (q := Queue[Any](maxsize=1))
+    await hr.ws.send_str(converter.dumps(req, Outgoing))
+    resp = await q.get()
+    if isinstance(resp, Error):
+        raise ResponseError(resp.message)
 
 
 async def _delayed_callback(callback: Callable, delay: float) -> None:
