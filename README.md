@@ -32,7 +32,9 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
-### 23.1.0b3 (UNRELEASED)
+### 23.1.0b3 (2023-04-03)
+
+- Fix the chatting API.
 
 ### 23.1.0b2 (2023-04-03)
 

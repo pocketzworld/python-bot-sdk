@@ -218,6 +218,7 @@ Incoming = (
     | UserLeftEvent
     | ChannelEvent
     | TipReactionEvent
+    | ChatRequest.ChatResponse
     | IndicatorRequest.IndicatorResponse
     | ReactionRequest.ReactionResponse
     | ChannelRequest.ChannelResponse
@@ -227,7 +228,7 @@ Incoming = (
     | GetWalletRequest.GetWalletResponse
 )
 Outgoing = (
-    ChatEvent
+    ChatRequest
     | ChannelEvent
     | IndicatorRequest
     | ReactionRequest
