@@ -7,7 +7,7 @@ The Highrise Python Bot SDK is a python library for writing and running Highrise
 First, install the library (preferably in a virtual environment):
 
 ```shell
-$ pip install highrise-bot-sdk==23.1.0.b0
+$ pip install highrise-bot-sdk==23.1.0b2
 ```
 
 In the [`Settings` section of the Highrise website](https://highrise.game/account/settings), create a bot and generate the API token. You'll need the token to start your bot later.
@@ -32,7 +32,7 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
-### 23.1.0.b2 (UNRELEASED)
+### 23.1.0b2 (2023-04-03)
 
 - Add support for receiving and sending reactions.
 - Fix support for hidden channels.
@@ -42,10 +42,10 @@ $ highrise mybot:Bot <room ID> <API token>
 - Fix issues with user coordinates.
 - Add support for fetching the bot wallet (`self.highrise.get_wallet()`).
 
-### 23.1.0.b1 (2023-03-28)
+### 23.1.0b1 (2023-03-28)
 
 - Add support for emotes and hidden channel messages.
 
-### 23.1.0.b0 (2023-03-10)
+### 23.1.0b0 (2023-03-10)
 
 - Initial beta release.
