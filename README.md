@@ -32,6 +32,11 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
+### 23.1.0b4 (UNRELEASED)
+
+- Fix the emote API.
+- Internally rework request handling to improve robustness.
+
 ### 23.1.0b3 (2023-04-03)
 
 - Fix the chatting API.

@@ -77,7 +77,7 @@ class ChatRequest:
     @define
     class ChatResponse:
         rid: str | None = None
-        """The successful response to a `ChatResponse."""
+        """The successful response to a `ChatRequest`."""
 
     Response: ClassVar = ChatResponse
 
@@ -131,7 +131,7 @@ class EmoteRequest:
 
     @define
     class EmoteResponse:
-        """The successful response to a `EmoteRequest."""
+        """The successful response to a `EmoteRequest`."""
 
         rid: str | None = None
 

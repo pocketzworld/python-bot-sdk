@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from asyncio import Queue, TaskGroup, sleep
 from itertools import count
-from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, Union
 
 from aiohttp import ClientWebSocketResponse
 from cattrs.preconf.json import make_converter
@@ -209,7 +209,18 @@ async def _delayed_callback(callback: Callable, delay: float) -> None:
 
 converter = make_converter()
 
-Incoming = (
+Outgoing = (
+    ChatRequest
+    | IndicatorRequest
+    | ReactionRequest
+    | EmoteRequest
+    | ChannelRequest
+    | FloorHitRequest
+    | TeleportRequest
+    | GetRoomUsersRequest
+    | GetWalletRequest
+)
+IncomingEvents = (
     Error
     | ChatEvent
     | EmoteEvent
@@ -218,26 +229,9 @@ Incoming = (
     | UserLeftEvent
     | ChannelEvent
     | TipReactionEvent
-    | ChatRequest.ChatResponse
-    | IndicatorRequest.IndicatorResponse
-    | ReactionRequest.ReactionResponse
-    | ChannelRequest.ChannelResponse
-    | FloorHitRequest.FloorHitResponse
-    | TeleportRequest.TeleportResponse
-    | GetRoomUsersRequest.GetRoomUsersResponse
-    | GetWalletRequest.GetWalletResponse
 )
-Outgoing = (
-    ChatRequest
-    | ChannelEvent
-    | IndicatorRequest
-    | ReactionRequest
-    | ChannelRequest
-    | FloorHitRequest
-    | TeleportRequest
-    | GetRoomUsersRequest
-    | GetWalletRequest
-)
+Incoming = IncomingEvents | Union[*(r.Response for r in Outgoing.__args__)]  # type: ignore
+
 configure_tagged_union(SessionMetadata | Error, converter)
 configure_tagged_union(Incoming, converter)
 configure_tagged_union(Outgoing, converter)
