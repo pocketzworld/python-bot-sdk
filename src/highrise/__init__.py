@@ -1,4 +1,4 @@
-"""The slides bot."""
+"""The Highrise bot SDK."""
 from __future__ import annotations
 
 from asyncio import Queue, TaskGroup, sleep
