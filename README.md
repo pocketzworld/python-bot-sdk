@@ -32,6 +32,8 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
+### 23.1.0b5 (UNRELEASED)
+
 ### 23.1.0b4 (2023-04-05)
 
 - Methods mapping to requests with empty responses (`chat`, `send_whisper`, `send_emote`, `react`, `set_indicator`, `send_channel`, `walk_to`, `teleport`) now return `None`, and raise a `highrise.ResponseError` on an error response.
