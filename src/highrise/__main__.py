@@ -3,12 +3,13 @@ from __future__ import annotations
 from asyncio import TaskGroup
 from asyncio import run as arun
 from asyncio import sleep
+from asyncio.exceptions import TimeoutError
 from importlib import import_module
 from math import ceil
 from os import environ, getcwd
 from sys import path
 from time import monotonic
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, Final
 
 from aiohttp import ClientSession, WebSocketError, WSServerHandshakeError
 from click import argument, command
@@ -25,6 +26,9 @@ from .models import (
     UserJoinedEvent,
     UserLeftEvent,
 )
+
+KEEPALIVE_RATE: Final[int] = 15
+READ_TIMEOUT: Final[int] = 20
 
 
 @command()
@@ -57,7 +61,7 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
 
                         async def send_keepalive() -> None:
                             while True:
-                                await sleep(15)
+                                await sleep(KEEPALIVE_RATE)
                                 try:
                                     await ws.send_json({"_type": "KeepaliveRequest"})
                                 except ConnectionResetError:
@@ -79,7 +83,8 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
 
                         bot.highrise = chat
                         tg.create_task(bot.on_start(session_metadata))
-                        async for frame in ws:
+                        while True:
+                            frame = await ws.receive(READ_TIMEOUT)
                             if isinstance(frame.data, WebSocketError):
                                 print("Websocket error, exiting.")
                                 return
@@ -126,7 +131,7 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                                     sender=sender, receiver=receiver, item=tip
                                 ):
                                     tg.create_task(bot.on_tip(sender, receiver, tip))
-            except (ConnectionResetError, WSServerHandshakeError):
+            except (ConnectionResetError, WSServerHandshakeError, TimeoutError):
                 # The throttler should kick in up-code.
                 print("ERROR")
                 pass
