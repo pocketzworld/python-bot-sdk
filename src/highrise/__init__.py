@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from asyncio import Queue, TaskGroup, sleep
 from itertools import count
-from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, TypeVar, Union
 
 from aiohttp import ClientWebSocketResponse
 from cattrs.preconf.json import make_converter
@@ -11,6 +11,7 @@ from cattrs.preconf.json import make_converter
 from ._unions import configure_tagged_union
 from .models import (
     AnchorPosition,
+    ChangeRoomPrivilegeRequest,
     ChannelEvent,
     ChannelRequest,
     ChatEvent,
@@ -20,14 +21,18 @@ from .models import (
     EmoteRequest,
     Error,
     FloorHitRequest,
+    GetRoomPrivilegeRequest,
     GetRoomUsersRequest,
     GetWalletRequest,
     IndicatorRequest,
     Item,
+    KeepaliveRequest,
+    ModerateRoomRequest,
     Position,
     Reaction,
     ReactionEvent,
     ReactionRequest,
+    RoomPermissions,
     SessionMetadata,
     TeleportRequest,
     TipReactionEvent,
@@ -44,7 +49,15 @@ else:
         pass
 
 
-__all__ = ["BaseBot", "Highrise", "User", "Position", "Reaction", "AnchorPosition"]
+__all__ = [
+    "BaseBot",
+    "Highrise",
+    "User",
+    "Position",
+    "Reaction",
+    "AnchorPosition",
+    "RoomPermissions",
+]
 A = TypeVar("A", bound=AttrsInstance)
 T = TypeVar("T")
 
@@ -162,6 +175,34 @@ class Highrise:
         """Fetch the bot wallet."""
         return await do_req_resp(self, GetWalletRequest())
 
+    async def moderate_room(
+        self,
+        user_id: str,
+        action: Literal["kick", "ban", "unban", "mute"],
+        action_length: int | None = None,
+    ) -> None:
+        """Moderate a user in the room."""
+        await _do_req_no_resp(self, ModerateRoomRequest(user_id, action, action_length))
+
+    async def get_room_privilege(
+        self, user_id: str
+    ) -> RoomPermissions | Error:
+        """Fetch the room privilege for given user_id."""
+        resp = await do_req_resp(self, GetRoomPrivilegeRequest(user_id))
+        if isinstance(resp, Error):
+            return resp
+        return resp.content
+
+    async def change_room_privilege(
+        self, user_id: str, permissions: RoomPermissions
+    ) -> None:
+        """Change the room privilege for given user_id.
+
+        example: self.highrise.change_room_privilege(user_id, RoomPermissions(moderator=True))
+
+        """
+        await _do_req_no_resp(self, ChangeRoomPrivilegeRequest(user_id, permissions))
+
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
 
@@ -220,6 +261,10 @@ Outgoing = (
     | TeleportRequest
     | GetRoomUsersRequest
     | GetWalletRequest
+    | GetRoomPrivilegeRequest
+    | ChangeRoomPrivilegeRequest
+    | ModerateRoomRequest
+    | KeepaliveRequest
 )
 IncomingEvents = (
     Error

@@ -14,6 +14,12 @@ Facing: TypeAlias = Literal["FrontRight", "FrontLeft", "BackRight", "BackLeft"]
 
 
 @define
+class RoomPermissions:
+    moderator: bool | None = None
+    designer: bool | None = None
+
+
+@define
 class Position:
     x: float
     y: float
@@ -167,6 +173,18 @@ class KeepaliveRequest:
     This must be sent every 15 seconds or the server will terminate the connection.
     """
 
+    rid: str | None = None
+
+    @define
+    class KeepaliveResponse:
+        """
+        A response to a successful reaction.
+        """
+
+        rid: str | None = None
+
+    Response: ClassVar = KeepaliveResponse
+
 
 @define
 class TeleportRequest:
@@ -249,6 +267,76 @@ class GetWalletRequest:
         rid: str
 
     Response: ClassVar = GetWalletResponse
+
+
+@define
+class ModerateRoomRequest:
+    """
+    Moderate the room.
+
+    This can be used to kick, ban, unban, or mute a user.
+    """
+
+    user_id: str
+    moderation_action: Literal["kick", "ban", "unban", "mute"]
+    action_length: int | None = None
+    rid: str | None = None
+
+    @define
+    class ModerateRoomResponse:
+        """
+        The successful response to a `ModerateRoomRequest`.
+        """
+
+        rid: str | None = None
+
+    Response: ClassVar = ModerateRoomResponse
+
+
+@define
+class GetRoomPrivilegeRequest:
+    """
+    Fetch the room privileges for provided `user_id`.
+    """
+
+    user_id: str
+    rid: str | None = None
+
+    @define
+    class GetRoomPrivilegeResponse:
+        """
+        The room privileges for provided `user_id`.
+        """
+
+        content: RoomPermissions
+        rid: str
+
+    Response: ClassVar = GetRoomPrivilegeResponse
+
+
+@define
+class ChangeRoomPrivilegeRequest:
+    """
+    Change the room privileges for provided `user_id`.
+    This can be used to both give and take moderation and designer privileges for current room.
+
+    Bots have to be in the room to change privileges.
+    Bots are using their owner's privileges.
+    """
+
+    user_id: str
+    permissions: RoomPermissions
+    rid: str | None = None
+
+    @define
+    class ChangeRoomPrivilegeResponse:
+        """
+        The successful response to a `ChangeRoomPrivilegeRequest`.
+        """
+
+        rid: str
+
+    Response: ClassVar = ChangeRoomPrivilegeResponse
 
 
 @define

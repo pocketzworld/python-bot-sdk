@@ -34,6 +34,11 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ### 23.1.0b5 (UNRELEASED)
 
+- Add support for getting room permissions for users (`self.highrise.get_room_privilege(user_id)`).
+- Add support changing room permissions for users (`self.highrise.set_room_privilege(user_id, privilege)`).
+- Add support for moderating rooms (`self.highrise.moderate_room(user_id, moderate_action, action_length)`). 
+- Rework how keepalive is handled
+
 ### 23.1.0b4 (2023-04-05)
 
 - Methods mapping to requests with empty responses (`chat`, `send_whisper`, `send_emote`, `react`, `set_indicator`, `send_channel`, `walk_to`, `teleport`) now return `None`, and raise a `highrise.ResponseError` on an error response.
