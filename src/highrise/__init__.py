@@ -1,12 +1,13 @@
 """The Highrise bot SDK."""
 from __future__ import annotations
 
-from asyncio import Queue, TaskGroup, sleep
+from asyncio import Queue, sleep
 from itertools import count
 from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, TypeVar, Union
 
 from aiohttp import ClientWebSocketResponse
 from cattrs.preconf.json import make_converter
+from quattro import TaskGroup
 
 from ._unions import configure_tagged_union
 from .models import (
@@ -184,9 +185,7 @@ class Highrise:
         """Moderate a user in the room."""
         await _do_req_no_resp(self, ModerateRoomRequest(user_id, action, action_length))
 
-    async def get_room_privilege(
-        self, user_id: str
-    ) -> RoomPermissions | Error:
+    async def get_room_privilege(self, user_id: str) -> RoomPermissions | Error:
         """Fetch the room privilege for given user_id."""
         resp = await do_req_resp(self, GetRoomPrivilegeRequest(user_id))
         if isinstance(resp, Error):
@@ -276,7 +275,10 @@ IncomingEvents = (
     | ChannelEvent
     | TipReactionEvent
 )
-Incoming = IncomingEvents | Union[*(r.Response for r in Outgoing.__args__)]  # type: ignore
+
+
+Incoming = IncomingEvents | Union[tuple(r.Response for r in Outgoing.__args__)]  # type: ignore
+
 
 configure_tagged_union(SessionMetadata | Error, converter)
 configure_tagged_union(Incoming, converter)

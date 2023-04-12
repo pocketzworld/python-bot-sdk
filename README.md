@@ -34,6 +34,8 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ### 23.1.0b6 (UNRELEASED)
 
+- Add Python 3.10 support
+
 ### 23.1.0b5 (2023-04-11)
 
 - Add support for getting room permissions for users (`self.highrise.get_room_privilege(user_id)`).
