@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from asyncio import TaskGroup
 from asyncio import run as arun
 from asyncio import sleep
 from asyncio.exceptions import TimeoutError
@@ -11,8 +10,10 @@ from sys import path
 from time import monotonic
 from typing import Any, AsyncGenerator, Final
 
+import pkg_resources
 from aiohttp import ClientSession, WebSocketError, WSServerHandshakeError
 from click import argument, command
+from quattro import TaskGroup
 
 from . import BaseBot, Highrise, Incoming, IncomingEvents, converter
 from .models import (
@@ -48,6 +49,7 @@ def run(bot_path: str, room_id: str, api_token: str) -> None:
 
 
 async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
+    version = pkg_resources.get_distribution("highrise-bot-sdk").version
     async with TaskGroup() as tg:
         t = throttler(5, 5)
         while True:
@@ -80,6 +82,10 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                         chat = Highrise()
                         chat.ws = ws
                         chat.tg = tg
+
+                        print(
+                            f"Connected using The Highrise Python Bot SDK version: '{version}'."
+                        )
 
                         bot.highrise = chat
                         tg.create_task(bot.on_start(session_metadata))
