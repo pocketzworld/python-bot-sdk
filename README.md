@@ -34,6 +34,8 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ### UNRELEASED
 
+- Add support for moving users to another room (`self.highrise.move_user_to_room(user_id, room_id)`).
+
 ### 23.1.0b6 (2023-04-17)
 
 - Add Python 3.10 support
