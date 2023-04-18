@@ -29,6 +29,7 @@ from .models import (
     Item,
     KeepaliveRequest,
     ModerateRoomRequest,
+    MoveUserToRoomRequest,
     Position,
     Reaction,
     ReactionEvent,
@@ -202,6 +203,13 @@ class Highrise:
         """
         await _do_req_no_resp(self, ChangeRoomPrivilegeRequest(user_id, permissions))
 
+    async def move_user_to_room(self, user_id: str, room_id: str) -> None:
+        """Attempt to move user to a different room.
+
+        This will only work if the bot belongs to owner of target room, or has designer privileges.
+        """
+        await _do_req_no_resp(self, MoveUserToRoomRequest(user_id, room_id))
+
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
 
@@ -264,6 +272,7 @@ Outgoing = (
     | ChangeRoomPrivilegeRequest
     | ModerateRoomRequest
     | KeepaliveRequest
+    | MoveUserToRoomRequest
 )
 IncomingEvents = (
     Error

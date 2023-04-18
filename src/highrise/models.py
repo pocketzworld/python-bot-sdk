@@ -340,6 +340,29 @@ class ChangeRoomPrivilegeRequest:
 
 
 @define
+class MoveUserToRoomRequest:
+    """
+    Move user to another room using room_id as a target room id
+    Bot operator must be owner of the target room, or has designer privileges in the target room, this will also work
+    if bot has designer privileges in the target room.
+
+    All other restriction to room movement apply, ie if target room is full this will fail.
+
+    """
+
+    user_id: str
+    room_id: str
+
+    rid: str | None = None
+
+    @define
+    class MoveUserToRoomResponse:
+        rid: str
+
+    Response: ClassVar = MoveUserToRoomResponse
+
+
+@define
 class SessionMetadata:
     """
     Initial session data.
