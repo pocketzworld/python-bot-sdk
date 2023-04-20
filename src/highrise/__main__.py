@@ -30,6 +30,8 @@ from .models import (
 
 KEEPALIVE_RATE: Final[int] = 15
 READ_TIMEOUT: Final[int] = 20
+SDK_PACKAGE: Final[str] = "highrise-bot-sdk"
+SDK_NAME: Final[str] = "highrise-python-bot-sdk"
 
 
 @command()
@@ -49,7 +51,7 @@ def run(bot_path: str, room_id: str, api_token: str) -> None:
 
 
 async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
-    version = pkg_resources.get_distribution("highrise-bot-sdk").version
+    version = pkg_resources.get_distribution(SDK_PACKAGE).version
     async with TaskGroup() as tg:
         t = throttler(5, 5)
         while True:
@@ -58,7 +60,11 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                 async with ClientSession() as session:
                     async with session.ws_connect(
                         environ.get("HR_WEBAPI_URL", "wss://highrise.game/web/webapi"),
-                        headers={"room-id": room_id, "api-token": api_key},
+                        headers={
+                            "room-id": room_id,
+                            "api-token": api_key,
+                            "user-agent": f"{SDK_NAME}/{version}",
+                        },
                     ) as ws:
 
                         async def send_keepalive() -> None:
@@ -83,9 +89,14 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                         chat.ws = ws
                         chat.tg = tg
 
-                        print(
-                            f"Connected using The Highrise Python Bot SDK version: '{version}'."
-                        )
+                        if (
+                            session_metadata.sdk_version is not None
+                            and session_metadata.sdk_version != version
+                        ):
+                            print(
+                                f"WARNING: The Highrise Python Bot SDK version ({version}) "
+                                f"does not match the recommended version for the API ({session_metadata.sdk_version})"
+                            )
 
                         bot.highrise = chat
                         tg.create_task(bot.on_start(session_metadata))
