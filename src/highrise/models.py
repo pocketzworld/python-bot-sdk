@@ -368,9 +368,17 @@ class SessionMetadata:
     Initial session data.
 
     This will be sent once, as the first message when a connection is established.
+    user_id is the bot's user id.
+    rate_limits is a dictionary of rate limits, with the key being the rate limit name and the value being a tuple of
+    (limit, period).
+    sdk_versions is a string containing the SDK versions recommended by the server if user is using SDK.
+
+
     """
 
     user_id: str
+    rate_limits: dict[str, tuple[int, float]]
+    sdk_version: str | None = None
 
 
 @define
