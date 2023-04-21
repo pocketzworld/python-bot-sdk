@@ -26,6 +26,7 @@ from .models import (
     TipReactionEvent,
     UserJoinedEvent,
     UserLeftEvent,
+    UserMovedEvent,
 )
 
 KEEPALIVE_RATE: Final[int] = 15
@@ -148,6 +149,8 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                                     sender=sender, receiver=receiver, item=tip
                                 ):
                                     tg.create_task(bot.on_tip(sender, receiver, tip))
+                                case UserMovedEvent(user=user, position=pos):
+                                    tg.create_task(bot.on_user_move(user, pos))
             except (ConnectionResetError, WSServerHandshakeError, TimeoutError):
                 # The throttler should kick in up-code.
                 print("ERROR")

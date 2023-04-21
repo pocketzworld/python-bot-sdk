@@ -35,6 +35,7 @@ $ highrise mybot:Bot <room ID> <API token>
 ### UNRELEASED
 
 - Add support for moving users to another room (`self.highrise.move_user_to_room(user_id, room_id)`).
+- Add handler that is triggered when user moves inside a room  (`self.on_user_move(user_id, position)`).) 
 - Expand session_metadata information with information about client rates
 - Expand session_metadata with information about sdk versions if client uses skd
 
