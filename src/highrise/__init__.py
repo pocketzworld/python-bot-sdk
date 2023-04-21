@@ -41,6 +41,7 @@ from .models import (
     User,
     UserJoinedEvent,
     UserLeftEvent,
+    UserMovedEvent,
 )
 
 if TYPE_CHECKING:
@@ -115,6 +116,10 @@ class BaseBot:
 
     async def on_channel(self, sender_id: str, message: str, tags: set[str]) -> None:
         """On a hidden channel message."""
+        pass
+
+    async def on_user_move(self, user: User, pos: Position) -> None:
+        """On a user moving in the room."""
         pass
 
 
@@ -283,6 +288,7 @@ IncomingEvents = (
     | UserLeftEvent
     | ChannelEvent
     | TipReactionEvent
+    | UserMovedEvent
 )
 
 

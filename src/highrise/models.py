@@ -452,3 +452,15 @@ class TipReactionEvent:
     sender: User
     receiver: User
     item: Item | CurrencyItem
+
+
+@define
+class UserMovedEvent:
+    """
+    A user has moved in the room.
+    user: User that moved
+    position: New position of the user or anchor position
+    """
+
+    user: User
+    position: Position | AnchorPosition
