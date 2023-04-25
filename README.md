@@ -7,7 +7,7 @@ The Highrise Python Bot SDK is a python library for writing and running Highrise
 First, install the library (preferably in a virtual environment):
 
 ```shell
-$ pip install highrise-bot-sdk==23.1.0b7
+$ pip install highrise-bot-sdk==23.1.0b8
 ```
 
 In the [`Settings` section of the Highrise website](https://highrise.game/account/settings), create a bot and generate the API token. You'll need the token to start your bot later.
@@ -32,7 +32,7 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
-### UNRELEASED
+### 23.1.0b8 (2023-04-25)
 
 - Add support for moving users to another room (`self.highrise.move_user_to_room(user_id, room_id)`).
 - Add handler that is triggered when user moves inside a room  (`self.on_user_move(user_id, position)`).) 
