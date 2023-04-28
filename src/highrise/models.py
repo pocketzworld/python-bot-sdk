@@ -226,6 +226,25 @@ class FloorHitRequest:
 
 
 @define
+class AnchorHitRequest:
+    """
+    Move the bot to the given `destination`.
+
+    """
+
+    anchor: AnchorPosition
+    rid: str | None = None
+
+    @define
+    class AnchorHitResponse:
+        """The successful response to a `TeleportRequest`."""
+
+        rid: str | None = None
+
+    Response: ClassVar = AnchorHitResponse
+
+
+@define
 class GetRoomUsersRequest:
     """
     Fetch the list of users currently in the room, with their positions.
