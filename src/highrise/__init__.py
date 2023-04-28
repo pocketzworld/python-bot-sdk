@@ -11,6 +11,7 @@ from quattro import TaskGroup
 
 from ._unions import configure_tagged_union
 from .models import (
+    AnchorHitRequest,
     AnchorPosition,
     ChangeRoomPrivilegeRequest,
     ChannelEvent,
@@ -118,7 +119,9 @@ class BaseBot:
         """On a hidden channel message."""
         pass
 
-    async def on_user_move(self, user: User, pos: Position) -> None:
+    async def on_user_move(
+        self, user: User, destination: Position | AnchorPosition
+    ) -> None:
         """On a user moving in the room."""
         pass
 
@@ -164,8 +167,11 @@ class Highrise:
     async def send_channel(self, message: str, tags: set[str] = set()) -> None:
         await _do_req_no_resp(self, ChannelRequest(message, tags))
 
-    async def walk_to(self, destination: Position) -> None:
-        await _do_req_no_resp(self, FloorHitRequest(destination))
+    async def walk_to(self, destination: Position | AnchorPosition) -> None:
+        if isinstance(destination, AnchorPosition):
+            await _do_req_no_resp(self, AnchorHitRequest(destination))
+        else:
+            await _do_req_no_resp(self, FloorHitRequest(destination))
 
     async def teleport(self, user_id: str, dest: Position) -> None:
         await _do_req_no_resp(self, TeleportRequest(user_id, dest))
@@ -278,6 +284,7 @@ Outgoing = (
     | ModerateRoomRequest
     | KeepaliveRequest
     | MoveUserToRoomRequest
+    | AnchorHitRequest
 )
 IncomingEvents = (
     Error
