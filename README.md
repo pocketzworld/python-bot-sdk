@@ -32,7 +32,7 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
-### UNRELEASED
+### 23.1.0b9 (2023-05-03)
 
 -- Add support for moving bot to an anchor in walk_to command (`self.highrise.walk_to(AnchorPosition)`).
 -- Change the way client ws messages are parsed, return error if message is not valid json.
