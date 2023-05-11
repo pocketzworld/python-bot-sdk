@@ -11,7 +11,7 @@ from time import monotonic
 from typing import Any, AsyncGenerator, Final
 
 import pkg_resources
-from aiohttp import ClientSession, WebSocketError, WSServerHandshakeError
+from aiohttp import ClientSession, WebSocketError, WSMsgType, WSServerHandshakeError
 from click import argument, command
 from quattro import TaskGroup
 
@@ -103,11 +103,23 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                         tg.create_task(bot.on_start(session_metadata))
                         while True:
                             frame = await ws.receive(READ_TIMEOUT)
+                            if frame.type in [WSMsgType.CLOSE, WSMsgType.CLOSED]:
+                                print(
+                                    f"ERROR connection with ID: {session_metadata.connection_id} closed."
+                                )
+                                # Close frame
+                                ka_task.cancel()
+                                return
                             if isinstance(frame.data, WebSocketError):
                                 print("Websocket error, exiting.")
                                 return
                             msg: IncomingEvents = converter.loads(frame.data, Incoming)  # type: ignore
                             match msg:
+                                case Error(message=error):
+                                    print(
+                                        f"ERROR: {error} closing connection with ID: {session_metadata.connection_id}"
+                                    )
+                                    raise ConnectionResetError
                                 case object(rid=rid) if hasattr(msg, "rid"):  # type: ignore
                                     if rid not in chat._req_id_registry:
                                         continue
@@ -153,7 +165,7 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                                     tg.create_task(bot.on_user_move(user, pos))
             except (ConnectionResetError, WSServerHandshakeError, TimeoutError):
                 # The throttler should kick in up-code.
-                print("ERROR")
+                print("ERROR: reconnecting...")
                 pass
 
 
