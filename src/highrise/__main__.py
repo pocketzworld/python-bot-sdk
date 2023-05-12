@@ -115,7 +115,7 @@ async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
                                 return
                             msg: IncomingEvents = converter.loads(frame.data, Incoming)  # type: ignore
                             match msg:
-                                case Error(message=error):
+                                case Error(message=error, rid=None):
                                     print(
                                         f"ERROR: {error} closing connection with ID: {session_metadata.connection_id}"
                                     )
