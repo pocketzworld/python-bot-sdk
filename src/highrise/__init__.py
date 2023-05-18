@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from asyncio import Queue, sleep
+from collections import Counter
 from itertools import count
 from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, TypeVar, Union
 
@@ -13,6 +14,7 @@ from ._unions import configure_tagged_union
 from .models import (
     AnchorHitRequest,
     AnchorPosition,
+    ChangeBackpackRequest,
     ChangeRoomPrivilegeRequest,
     ChannelEvent,
     ChannelRequest,
@@ -24,6 +26,7 @@ from .models import (
     EmoteRequest,
     Error,
     FloorHitRequest,
+    GetBackpackRequest,
     GetRoomPrivilegeRequest,
     GetRoomUsersRequest,
     GetUserOutfitRequest,
@@ -199,6 +202,18 @@ class Highrise:
         """Fetch the bot wallet."""
         return await do_req_resp(self, GetWalletRequest())
 
+    async def get_backpack(
+        self, user_id: str
+    ) -> GetBackpackRequest.GetBackpackResponse | Error:
+        """Fetch a user's backpack."""
+        return await do_req_resp(self, GetBackpackRequest(user_id))
+
+    async def change_backpack(
+        self, user_id: str, changes: dict[str, int]
+    ) -> ChangeBackpackRequest.ChangeBackpackResponse | Error:
+        """Change a user's backpack."""
+        return await do_req_resp(self, ChangeBackpackRequest(user_id, Counter(changes)))
+
     async def moderate_room(
         self,
         user_id: str,
@@ -320,6 +335,8 @@ Outgoing = (
     | InviteSpeakerRequest
     | RemoveSpeakerRequest
     | GetUserOutfitRequest
+    | GetBackpackRequest
+    | ChangeBackpackRequest
 )
 IncomingEvents = (
     Error
