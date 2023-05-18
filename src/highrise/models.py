@@ -1,3 +1,4 @@
+from collections import Counter
 from typing import ClassVar, Literal, TypeAlias
 
 from attrs import Factory, define
@@ -389,6 +390,36 @@ class RoomInfo:
 
     owner_id: str
     room_name: str
+
+
+@define
+class GetBackpackRequest:
+    """
+    Fetch a user's world backpack.
+    """
+
+    user_id: str
+    rid: str | None = None
+
+    @define
+    class GetBackpackResponse:
+        backpack: Counter[str]
+        rid: str | None = None
+
+    Response: ClassVar = GetBackpackResponse
+
+
+@define
+class ChangeBackpackRequest:
+    user_id: str
+    changes: Counter[str]
+    rid: str | None = None
+
+    @define
+    class ChangeBackpackResponse:
+        rid: str | None = None
+
+    Response: ClassVar = ChangeBackpackResponse
 
 
 @define
