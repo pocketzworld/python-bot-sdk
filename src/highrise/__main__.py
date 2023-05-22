@@ -12,7 +12,8 @@ from typing import Any, AsyncGenerator, Final
 
 import pkg_resources
 from aiohttp import ClientSession, WebSocketError, WSMsgType, WSServerHandshakeError
-from click import argument, command
+from attrs import define
+from click import argument, command, option
 from quattro import TaskGroup
 
 from . import BaseBot, Highrise, Incoming, IncomingEvents, converter
@@ -35,23 +36,54 @@ SDK_PACKAGE: Final[str] = "highrise-bot-sdk"
 SDK_NAME: Final[str] = "highrise-python-bot-sdk"
 
 
+@define
+class BotDefinition:
+    bot: BaseBot
+    room_id: str
+    api_token: str
+
+
 @command()
-@argument("bot_path")
-@argument("room_id")
-@argument("api_token")
-def run(bot_path: str, room_id: str, api_token: str) -> None:
+@argument("bot_definition", type=(str, str, str))
+@option("--extra_bot", type=(str, str, str), multiple=True)
+def run(
+    bot_definition: tuple[str, str, str], extra_bot: list[tuple[str, str, str]]
+) -> None:
     """Run a Highrise bot.
 
     Import the bot class from BOT_PATH (format: `module_path:ClassName`),
     and connect it to the room associated with the ROOM_ID
     using the provided API_TOKEN.
+
+    Multiple bots can be run at once by providing multiple bot definitions.
     """
-    path.append(getcwd())
-    mod, name = bot_path.split(":")
-    return arun(main(getattr(import_module(mod), name)(), room_id, api_token))
+    bot_definition_list = [bot_definition] + list(extra_bot)
+
+    definitions = []
+    for bot_path, room_id, api_token in bot_definition_list:
+        path.append(getcwd())
+        mod, name = bot_path.split(":")
+        definitions.append(
+            BotDefinition(getattr(import_module(mod), name)(), room_id, api_token)
+        )
+
+    return arun(main(definitions))
 
 
-async def main(bot: BaseBot, room_id: str, api_key: str) -> None:
+async def main(definitions: list[BotDefinition]) -> None:
+    async with TaskGroup() as tg:
+        for bot_definition in definitions:
+            bot = bot_definition.bot
+            room_id = bot_definition.room_id
+            api_key = bot_definition.api_token
+
+            tg.create_task(bot_runner(bot, room_id, api_key))
+            if len(definitions) > 1:
+                print("Bot started. Waiting 10 seconds before starting the next bot.")
+            await sleep(10)
+
+
+async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
     version = pkg_resources.get_distribution(SDK_PACKAGE).version
     async with TaskGroup() as tg:
         t = throttler(5, 5)
