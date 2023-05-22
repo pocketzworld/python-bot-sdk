@@ -34,6 +34,8 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ### 23.1.0b11 (UNRELEASED)
 
+-- Add support for running multiple bots in the same process.
+
 ### 23.1.0b10 (2023-05-12)
 
 -- Fix bug with handling of error responses.
