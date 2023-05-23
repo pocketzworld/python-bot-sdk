@@ -397,6 +397,7 @@ class SessionMetadata:
     """
 
     user_id: str
+    room_info: dict[str, str]
     rate_limits: dict[str, tuple[int, float]]
     connection_id: str
     sdk_version: str | None = None
