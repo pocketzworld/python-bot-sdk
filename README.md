@@ -35,6 +35,7 @@ $ highrise mybot:Bot <room ID> <API token>
 ### 23.1.0b11 (UNRELEASED)
 
 -- Add support for running multiple bots in the same process.
+-- Add additional room information such as owner's id and room name to session metadata on connection
 
 ### 23.1.0b10 (2023-05-12)
 
