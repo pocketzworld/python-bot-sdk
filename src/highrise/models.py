@@ -382,12 +382,23 @@ class MoveUserToRoomRequest:
 
 
 @define
+class RoomInfo:
+    """
+    Information about the room.
+    """
+
+    owner_id: str
+    room_name: str
+
+
+@define
 class SessionMetadata:
     """
     Initial session data.
 
     This will be sent once, as the first message when a connection is established.
     user_id is the bot's user id.
+    room_info is additional information about the connected room.
     rate_limits is a dictionary of rate limits, with the key being the rate limit name and the value being a tuple of
     (limit, period).
     connection_id is the connection id of the websocket used in bot connection.
@@ -397,6 +408,7 @@ class SessionMetadata:
     """
 
     user_id: str
+    room_info: RoomInfo
     rate_limits: dict[str, tuple[int, float]]
     connection_id: str
     sdk_version: str | None = None
