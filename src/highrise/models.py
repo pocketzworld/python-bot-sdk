@@ -497,3 +497,76 @@ class UserMovedEvent:
 
     user: User
     position: Position | AnchorPosition
+
+
+@define
+class VoiceEvent:
+    """
+    Event that is sent when status of voice is changed in the room.
+
+    users: The list of users that currently have voice chat privileges in the room and status of their voice.
+    seconds_left: The number of seconds left until the voice chat ends.
+    """
+
+    users: list[tuple[User, Literal["voice", "muted"]]]
+    seconds_left: int
+
+
+@define
+class CheckVoiceChatRequest:
+    """
+    Check the voice chat status in the room.
+    """
+
+    rid: str | None = None
+
+    @define
+    class CheckVoiceChatResponse:
+        """
+
+        Returns the status of voice chat in the room.
+        seconds_left: The number of seconds left until the voice chat ends.
+        auto_speakers: The list of users that automatically have voice chat privileges in the room like moderators and
+        owner.
+        users: The list of users that currently have voice chat privileges in the room.
+
+        """
+
+        seconds_left: int
+        auto_speakers: set[str]
+        users: dict[str, Literal["invited", "voice", "muted"]]
+        rid: str | None = None
+
+    Response: ClassVar = CheckVoiceChatResponse
+
+
+@define
+class InviteSpeakerRequest:
+    """
+    Invite a user to speak in the room.
+    """
+
+    user_id: str
+    rid: str | None = None
+
+    @define
+    class InviteSpeakerResponse:
+        rid: str | None = None
+
+    Response: ClassVar = InviteSpeakerResponse
+
+
+@define
+class RemoveSpeakerRequest:
+    """
+    Remove a user from speaking in the room.
+    """
+
+    user_id: str
+    rid: str | None = None
+
+    @define
+    class RemoveSpeakerResponse:
+        rid: str | None = None
+
+    Response: ClassVar = RemoveSpeakerResponse

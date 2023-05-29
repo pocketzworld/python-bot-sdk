@@ -34,17 +34,22 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ### 23.1.0b11 (UNRELEASED)
 
--- Add support for running multiple bots in the same process.
--- Add additional room information such as owner's id and room name to session metadata on connection
+- Add support for running multiple bots in the same process.
+- Add additional room information such as owner's id and room name to session metadata on connection
+- Add support for voice chat management and info, bots can now get information about voice chat in the room if bot owner has privileges to get info or manage bots in the room (`self.highrise.get_voice_status()`)
+- Add support for bots to invite users to voice chat (`self.highrise.add_user_to_voice(user_id)`
+- Add support for bots to remove users from voice chat (`self.highrise.remove_user_from_voice(user_id)`
+- Add handler that is triggered when state of voice in the room changed(`self.on_voice_change(users, seconds_left)`
+
 
 ### 23.1.0b10 (2023-05-12)
 
--- Fix bug with handling of error responses.
+- Fix bug with handling of error responses.
 
 ### 23.1.0b9 (2023-05-11)
 
--- Add support for moving bot to an anchor in walk_to command (`self.highrise.walk_to(AnchorPosition)`).
--- Change the way client ws messages are parsed, return error if message is not valid json.
+- Add support for moving bot to an anchor in walk_to command (`self.highrise.walk_to(AnchorPosition)`).
+- Change the way client ws messages are parsed, return error if message is not valid json.
 
 ### 23.1.0b8 (2023-04-25)
 
