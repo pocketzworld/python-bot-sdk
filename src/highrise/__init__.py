@@ -18,6 +18,7 @@ from .models import (
     ChannelRequest,
     ChatEvent,
     ChatRequest,
+    CheckVoiceChatRequest,
     CurrencyItem,
     EmoteEvent,
     EmoteRequest,
@@ -27,6 +28,7 @@ from .models import (
     GetRoomUsersRequest,
     GetWalletRequest,
     IndicatorRequest,
+    InviteSpeakerRequest,
     Item,
     KeepaliveRequest,
     ModerateRoomRequest,
@@ -35,6 +37,7 @@ from .models import (
     Reaction,
     ReactionEvent,
     ReactionRequest,
+    RemoveSpeakerRequest,
     RoomPermissions,
     SessionMetadata,
     TeleportRequest,
@@ -43,6 +46,7 @@ from .models import (
     UserJoinedEvent,
     UserLeftEvent,
     UserMovedEvent,
+    VoiceEvent,
 )
 
 if TYPE_CHECKING:
@@ -123,6 +127,12 @@ class BaseBot:
         self, user: User, destination: Position | AnchorPosition
     ) -> None:
         """On a user moving in the room."""
+        pass
+
+    async def on_voice_change(
+        self, users: list[tuple[User, Literal["voice", "muted"]]], seconds_left: int
+    ) -> None:
+        """On a change in voice status in the room."""
         pass
 
 
@@ -221,6 +231,20 @@ class Highrise:
         """
         await _do_req_no_resp(self, MoveUserToRoomRequest(user_id, room_id))
 
+    async def get_voice_status(
+        self,
+    ) -> CheckVoiceChatRequest.CheckVoiceChatResponse | Error:
+        """Fetch the voice status for the room."""
+        return await do_req_resp(self, CheckVoiceChatRequest())
+
+    async def add_user_to_voice(self, user_id: str) -> None:
+        """Add a user to voice chat."""
+        await _do_req_no_resp(self, InviteSpeakerRequest(user_id))
+
+    async def remove_user_from_voice(self, user_id: str) -> None:
+        """Remove a user from voice chat."""
+        await _do_req_no_resp(self, RemoveSpeakerRequest(user_id))
+
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
 
@@ -285,6 +309,9 @@ Outgoing = (
     | KeepaliveRequest
     | MoveUserToRoomRequest
     | AnchorHitRequest
+    | CheckVoiceChatRequest
+    | InviteSpeakerRequest
+    | RemoveSpeakerRequest
 )
 IncomingEvents = (
     Error
@@ -296,6 +323,7 @@ IncomingEvents = (
     | ChannelEvent
     | TipReactionEvent
     | UserMovedEvent
+    | VoiceEvent
 )
 
 

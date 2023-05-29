@@ -28,6 +28,7 @@ from .models import (
     UserJoinedEvent,
     UserLeftEvent,
     UserMovedEvent,
+    VoiceEvent,
 )
 
 KEEPALIVE_RATE: Final[int] = 15
@@ -195,6 +196,10 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                                     tg.create_task(bot.on_tip(sender, receiver, tip))
                                 case UserMovedEvent(user=user, position=pos):
                                     tg.create_task(bot.on_user_move(user, pos))
+                                case VoiceEvent(users=users, seconds_left=seconds_left):
+                                    tg.create_task(
+                                        bot.on_voice_change(users, seconds_left)
+                                    )
             except (ConnectionResetError, WSServerHandshakeError, TimeoutError):
                 # The throttler should kick in up-code.
                 print("ERROR: reconnecting...")
