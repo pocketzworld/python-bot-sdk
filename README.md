@@ -34,6 +34,8 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ### 23.1.0b12 (UNRELEASED)
 
+- Add support for getting information about user outfit if user is in the room (`self.highrise.get_user_outfit(user_id)`).
+
 ### 23.1.0b11 (2023-05-29)
 
 - Add support for running multiple bots in the same process.
