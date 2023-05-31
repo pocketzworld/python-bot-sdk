@@ -32,6 +32,8 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
+### 23.1.0b12 (UNRELEASED)
+
 ### 23.1.0b11 (2023-05-29)
 
 - Add support for running multiple bots in the same process.
