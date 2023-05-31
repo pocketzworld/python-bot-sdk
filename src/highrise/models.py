@@ -570,3 +570,24 @@ class RemoveSpeakerRequest:
         rid: str | None = None
 
     Response: ClassVar = RemoveSpeakerResponse
+
+
+@define
+class GetUserOutfitRequest:
+    """
+    Get the outfit of a user.
+    """
+
+    user_id: str
+    rid: str | None = None
+
+    @define
+    class GetUserOutfitResponse:
+        """
+        The outfit of a user. Returns list of items user is currently wearing.
+        """
+
+        outfit: list[Item]
+        rid: str | None = None
+
+    Response: ClassVar = GetUserOutfitResponse

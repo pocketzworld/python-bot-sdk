@@ -26,6 +26,7 @@ from .models import (
     FloorHitRequest,
     GetRoomPrivilegeRequest,
     GetRoomUsersRequest,
+    GetUserOutfitRequest,
     GetWalletRequest,
     IndicatorRequest,
     InviteSpeakerRequest,
@@ -245,6 +246,12 @@ class Highrise:
         """Remove a user from voice chat."""
         await _do_req_no_resp(self, RemoveSpeakerRequest(user_id))
 
+    async def get_user_outfit(
+        self, user_id: str
+    ) -> GetUserOutfitRequest.GetUserOutfitResponse | Error:
+        """Fetch the outfit for a user."""
+        return await do_req_resp(self, GetUserOutfitRequest(user_id))
+
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
 
@@ -312,6 +319,7 @@ Outgoing = (
     | CheckVoiceChatRequest
     | InviteSpeakerRequest
     | RemoveSpeakerRequest
+    | GetUserOutfitRequest
 )
 IncomingEvents = (
     Error
