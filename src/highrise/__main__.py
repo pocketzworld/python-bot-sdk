@@ -30,11 +30,19 @@ from .models import (
     UserMovedEvent,
     VoiceEvent,
 )
+from .models_control import (
+    ControlEvent,
+    ControlSessionMetadata,
+    InstanceStartedEvent,
+    InstanceStoppedEvent,
+)
+from .models_control import converter as control_converter
 
 KEEPALIVE_RATE: Final = 15
 READ_TIMEOUT: Final = 20
 SDK_PACKAGE: Final = "highrise-bot-sdk"
 SDK_NAME: Final = "highrise-python-bot-sdk"
+VERSION: Final = pkg_resources.get_distribution(SDK_PACKAGE).version
 
 
 @define
@@ -58,17 +66,24 @@ def run(
 
     Multiple bots can be run at once by providing multiple bot definitions.
     """
-    bot_definition_list = [bot_definition] + list(extra_bot)
-
-    definitions = []
-    for bot_path, room_id, api_token in bot_definition_list:
-        path.append(getcwd())
+    path.append(getcwd())
+    if bot_definition[1].startswith("3d/"):
+        room_id = bot_definition[1][3:]
+        bot_path = bot_definition[0]
         mod, name = bot_path.split(":")
-        definitions.append(
-            BotDefinition(getattr(import_module(mod), name)(), room_id, api_token)
-        )
+        bot_cls = getattr(import_module(mod), name)
+        return arun(control_runner(bot_cls, room_id, bot_definition[2]))
+    else:
+        bot_definition_list = [bot_definition] + list(extra_bot)
 
-    return arun(main(definitions))
+        definitions = []
+        for bot_path, room_id, api_token in bot_definition_list:
+            mod, name = bot_path.split(":")
+            definitions.append(
+                BotDefinition(getattr(import_module(mod), name)(), room_id, api_token)
+            )
+
+        return arun(main(definitions))
 
 
 async def main(definitions: list[BotDefinition]) -> None:
@@ -85,7 +100,6 @@ async def main(definitions: list[BotDefinition]) -> None:
 
 
 async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
-    version = pkg_resources.get_distribution(SDK_PACKAGE).version
     async with TaskGroup() as tg:
         t = throttler(5, 5)
         while True:
@@ -101,7 +115,7 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                         headers={
                             "room-id": room_id,
                             "api-token": api_key,
-                            "user-agent": f"{SDK_NAME}/{version}",
+                            "user-agent": f"{SDK_NAME}/{VERSION}",
                         },
                     ) as ws:
 
@@ -129,10 +143,10 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
 
                         if (
                             session_metadata.sdk_version is not None
-                            and session_metadata.sdk_version != version
+                            and session_metadata.sdk_version != VERSION
                         ):
                             print(
-                                f"WARNING: The Highrise Python Bot SDK version ({version}) "
+                                f"WARNING: The Highrise Python Bot SDK version ({VERSION}) "
                                 f"does not match the recommended version for the API ({session_metadata.sdk_version})"
                             )
 
@@ -213,6 +227,7 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
 async def throttler(
     drops: int = 10, drop_recharge: float = 1.0
 ) -> AsyncGenerator[Any, None]:
+    """Connect throttler."""
     next_full = monotonic()
     while True:
         now = monotonic()
@@ -255,6 +270,78 @@ def gather_subscriptions(bot: BaseBot) -> str:
     }
 
     return f"?events={','.join(subscriptions)}" if subscriptions else ""
+
+
+async def control_runner(bot_cls: type[BaseBot], room_id: str, api_key: str) -> None:
+    """Run a control websocket handler."""
+    async with TaskGroup() as tg:
+        instances_to_bots = {}
+        while True:
+            async with ClientSession() as session:
+                url = environ.get("HR_WEBAPI_URL", "wss://highrise.game/web/botapi")
+                url = f"{url}/control/{room_id}"
+                async with session.ws_connect(
+                    url,
+                    headers={
+                        "api-token": api_key,
+                        "user-agent": f"{SDK_NAME}/{VERSION}",
+                    },
+                ) as ws:
+
+                    async def send_keepalive() -> None:
+                        while True:
+                            await sleep(KEEPALIVE_RATE)
+                            try:
+                                await ws.send_json({"_type": "KeepaliveRequest"})
+                            except ConnectionResetError:
+                                # We don't want to close the entire TaskGroup.
+                                return
+
+                    ka_task = tg.create_task(send_keepalive())
+                    session_metadata: ControlSessionMetadata | Error = control_converter.loads(
+                        await ws.receive_str(), ControlSessionMetadata | Error  # type: ignore
+                    )
+                    if isinstance(session_metadata, Error):
+                        print(f"ERROR: {session_metadata}")
+                        ka_task.cancel()
+                        return
+                    for instance_id in session_metadata.instance_ids:
+                        if instance_id in instances_to_bots:
+                            # Could be in here from before, if the control socket
+                            # gets reset.
+                            continue
+                        print(f"Starting bot for instance {instance_id}")
+                        bot_task = tg.create_task(
+                            bot_runner(bot_cls(), f"3d/{instance_id}", api_key)
+                        )
+                        instances_to_bots[instance_id] = bot_task
+                    while True:
+                        frame = await ws.receive(READ_TIMEOUT)
+                        if frame.type in [WSMsgType.CLOSE, WSMsgType.CLOSED]:
+                            print(
+                                f"ERROR connection with ID: {session_metadata.connection_id} closed."
+                            )
+                            ka_task.cancel()
+                            return
+                        if isinstance(frame.data, WebSocketError):
+                            print("Websocket error, exiting.")
+                            ka_task.cancel()
+                            return
+                        msg: ControlEvent = control_converter.loads(
+                            frame.data, ControlEvent
+                        )
+                        match msg:
+                            case InstanceStartedEvent(
+                                instance_id=instance_id
+                            ) if instance_id not in instances_to_bots:
+                                bot_task = tg.create_task(
+                                    bot_runner(bot_cls(), f"3d/{instance_id}", api_key)
+                                )
+                                instances_to_bots[instance_id] = bot_task
+                            case InstanceStoppedEvent(
+                                instance_id=instance_id
+                            ) if instance_id in instances_to_bots:
+                                instances_to_bots.pop(instance_id).cancel()
 
 
 if __name__ == "__main__":
