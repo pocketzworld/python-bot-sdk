@@ -31,10 +31,10 @@ from .models import (
     VoiceEvent,
 )
 
-KEEPALIVE_RATE: Final[int] = 15
-READ_TIMEOUT: Final[int] = 20
-SDK_PACKAGE: Final[str] = "highrise-bot-sdk"
-SDK_NAME: Final[str] = "highrise-python-bot-sdk"
+KEEPALIVE_RATE: Final = 15
+READ_TIMEOUT: Final = 20
+SDK_PACKAGE: Final = "highrise-bot-sdk"
+SDK_NAME: Final = "highrise-python-bot-sdk"
 
 
 @define
@@ -92,8 +92,12 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
             await anext(t)
             try:
                 async with ClientSession() as session:
+                    base_url = environ.get(
+                        "HR_WEBAPI_URL",
+                        "wss://highrise.game/web/webapi",
+                    )
                     async with session.ws_connect(
-                        environ.get("HR_WEBAPI_URL", "wss://highrise.game/web/webapi"),
+                        f"{base_url}{gather_subscriptions(bot)}",
                         headers={
                             "room-id": room_id,
                             "api-token": api_key,
@@ -228,6 +232,29 @@ async def throttler(
                 await sleep(to_wait)
                 next_full = next_full + drop_recharge
                 yield None
+
+
+def gather_subscriptions(bot: BaseBot) -> str:
+    method_map: dict[str, str] = {
+        "on_chat": "chat",
+        "on_whisper": "chat",
+        "on_emote": "emote",
+        "on_reaction": "reaction",
+        "on_user_join": "user_joined",
+        "on_user_leave": "user_left",
+        "on_user_move": "user_moved",
+        "on_tip": "tip_reaction",
+        "on_voice_change": "voice",
+        "on_channel": "channel",
+    }
+
+    subscriptions = {
+        event_name
+        for method_name, event_name in method_map.items()
+        if getattr(BaseBot, method_name) != getattr(type(bot), method_name)
+    }
+
+    return f"?events={','.join(subscriptions)}" if subscriptions else ""
 
 
 if __name__ == "__main__":
