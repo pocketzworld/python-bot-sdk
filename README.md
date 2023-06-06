@@ -32,7 +32,7 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
-### 23.1.0b12 (UNRELEASED)
+### 23.1.0b12 (2023-06-06)
 
 - Add support for getting information about user outfit if user is in the room (`self.highrise.get_user_outfit(user_id)`).
 - Enable automatic filtering of events based on bot usage.
