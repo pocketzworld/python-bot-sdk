@@ -85,7 +85,7 @@ class BaseBot:
 
     highrise: Highrise
 
-    async def before_start(self) -> None:
+    async def before_start(self, tg: TaskGroup) -> None:
         """Called before the bot starts."""
         pass
 
