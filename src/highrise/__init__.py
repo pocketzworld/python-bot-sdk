@@ -27,6 +27,8 @@ from .models import (
     Error,
     FloorHitRequest,
     GetBackpackRequest,
+    GetConversationsRequest,
+    GetMessagesRequest,
     GetRoomPrivilegeRequest,
     GetRoomUsersRequest,
     GetUserOutfitRequest,
@@ -35,6 +37,8 @@ from .models import (
     InviteSpeakerRequest,
     Item,
     KeepaliveRequest,
+    LeaveConversationRequest,
+    MessageEvent,
     ModerateRoomRequest,
     MoveUserToRoomRequest,
     Position,
@@ -43,6 +47,7 @@ from .models import (
     ReactionRequest,
     RemoveSpeakerRequest,
     RoomPermissions,
+    SendMessageRequest,
     SessionMetadata,
     TeleportRequest,
     TipReactionEvent,
@@ -141,6 +146,12 @@ class BaseBot:
         self, users: list[tuple[User, Literal["voice", "muted"]]], seconds_left: int
     ) -> None:
         """On a change in voice status in the room."""
+        pass
+
+    async def on_message(
+        self, user_id: str, conversation_id: str, is_new_conversation: bool
+    ) -> None:
+        """On a inbox message received from a user."""
         pass
 
 
@@ -271,6 +282,34 @@ class Highrise:
         """Fetch the outfit for a user."""
         return await do_req_resp(self, GetUserOutfitRequest(user_id))
 
+    async def get_conversations(
+        self, not_joined: bool = False, last_id: str | None = None
+    ) -> GetConversationsRequest.GetConversationsResponse | Error:
+        """Fetch the conversations for the bot."""
+        return await do_req_resp(self, GetConversationsRequest(not_joined, last_id))
+
+    async def send_message(
+        self,
+        conversation_id: str,
+        content: str,
+        message_type: Literal["text", "invite"] = "text",
+        room_id: str | None = None,
+    ) -> None:
+        """Send a message to conversation."""
+        await _do_req_no_resp(
+            self, SendMessageRequest(conversation_id, content, message_type, room_id)
+        )
+
+    async def get_messages(
+        self, conversation_id: str, last_id: str | None = None
+    ) -> GetMessagesRequest.GetMessagesResponse | Error:
+        """Fetch messages from a conversation."""
+        return await do_req_resp(self, GetMessagesRequest(conversation_id, last_id))
+
+    async def leave_conversation(self, conversation_id: str) -> None:
+        """Leave a conversation."""
+        await _do_req_no_resp(self, LeaveConversationRequest(conversation_id))
+
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
 
@@ -341,6 +380,10 @@ Outgoing = (
     | GetUserOutfitRequest
     | GetBackpackRequest
     | ChangeBackpackRequest
+    | GetConversationsRequest
+    | SendMessageRequest
+    | GetMessagesRequest
+    | LeaveConversationRequest
 )
 IncomingEvents = (
     Error
@@ -353,6 +396,7 @@ IncomingEvents = (
     | TipReactionEvent
     | UserMovedEvent
     | VoiceEvent
+    | MessageEvent
 )
 
 

@@ -1,4 +1,5 @@
 from collections import Counter
+from datetime import datetime
 from typing import ClassVar, Literal, TypeAlias
 
 from attrs import Factory, define
@@ -57,6 +58,39 @@ class Item:
     type: Literal["clothing"]
     amount: int
     id: str
+
+
+@define
+class Message:
+    """
+    A Highrise conversation message.
+    """
+
+    message_id: str
+    conversation_id: str
+    createdAt: datetime | None
+
+    content: str
+    sender_id: str
+
+    category: Literal["text", "invite"]
+
+
+@define
+class Conversation:
+    """
+    A Highrise conversation. Bots can join direct conversations, but not group conversations.
+    Bots can respond to messages in conversations, but cannot initiate messages.
+    """
+
+    id: str
+    did_join: bool
+    unread_count: int
+    last_message: Message | None
+    muted: bool
+    member_ids: list[str] | None = None
+    name: str | None = None
+    owner_id: str | None = None
 
 
 @define
@@ -544,6 +578,18 @@ class VoiceEvent:
 
 
 @define
+class MessageEvent:
+    """
+    A message event, indicating that bot has received a message from someone. If the message is from a new conversation,
+     `is_new_conversation` field will be True.
+    """
+
+    user_id: str
+    conversation_id: str
+    is_new_conversation: bool
+
+
+@define
 class CheckVoiceChatRequest:
     """
     Check the voice chat status in the room.
@@ -622,3 +668,83 @@ class GetUserOutfitRequest:
         rid: str | None = None
 
     Response: ClassVar = GetUserOutfitResponse
+
+
+@define
+class GetConversationsRequest:
+    """
+    Get the conversations of a bat. if not_joined is true, only get the conversations that bot has not joined yet will
+    be returned. 20 conversations will be returned at most, if all 20 conversations are returned, the last_id can be used
+    to retrieve the next 20 conversations.
+    """
+
+    not_joined: bool = False
+    last_id: str | None = None
+    rid: str | None = None
+
+    @define
+    class GetConversationsResponse:
+        conversations: list[Conversation]
+        not_joined: int
+        rid: str | None = None
+
+    Response: ClassVar = GetConversationsResponse
+
+
+@define
+class SendMessageRequest:
+    """
+    Send a message to a conversation. If bot wishes to send room invite, the room_id must be provided.
+    """
+
+    conversation_id: str
+    content: str
+    type: Literal["text", "invite"]
+    room_id: str | None = None
+    rid: str | None = None
+
+    @define
+    class SendMessageResponse:
+        rid: str | None = None
+
+    Response: ClassVar = SendMessageResponse
+
+
+@define
+class GetMessagesRequest:
+    """
+    Get the messages of a conversation.
+    20 messages will be returned at most, if all 20 messages are returned, the
+     last_message_id can be used to retrieve the next 20 messages.
+    """
+
+    conversation_id: str
+    last_message_id: str | None = None
+    rid: str | None = None
+
+    @define
+    class GetMessagesResponse:
+        messages: list[Message]
+        rid: str | None = None
+
+    Response: ClassVar = GetMessagesResponse
+
+
+@define
+class LeaveConversationRequest:
+    """
+    Leave a conversation.
+    """
+
+    conversation_id: str
+    rid: str | None = None
+
+    @define
+    class LeaveConversationResponse:
+        """
+        The leave conversation success response.
+        """
+
+        rid: str | None = None
+
+    Response: ClassVar = LeaveConversationResponse

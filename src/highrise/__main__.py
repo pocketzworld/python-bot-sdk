@@ -22,6 +22,7 @@ from .models import (
     ChatEvent,
     EmoteEvent,
     Error,
+    MessageEvent,
     ReactionEvent,
     SessionMetadata,
     TipReactionEvent,
@@ -219,6 +220,14 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                                     tg.create_task(
                                         bot.on_voice_change(users, seconds_left)
                                     )
+                                case MessageEvent(
+                                    user_id=user_id,
+                                    conversation_id=conv_id,
+                                    is_new_conversation=is_new,
+                                ):
+                                    tg.create_task(
+                                        bot.on_message(user_id, conv_id, is_new)
+                                    )
             except (ConnectionResetError, WSServerHandshakeError, TimeoutError):
                 # The throttler should kick in up-code.
                 print("ERROR: reconnecting...")
@@ -262,6 +271,7 @@ def gather_subscriptions(bot: BaseBot) -> str:
         "on_tip": "tip_reaction",
         "on_voice_change": "voice",
         "on_channel": "channel",
+        "on_message": "message",
     }
 
     subscriptions = {

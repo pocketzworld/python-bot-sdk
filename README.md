@@ -32,7 +32,15 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
-### UNRELEASED
+### 23.1.0b13 UNRELEASED
+
+- Add optional hook that is triggered on bot startup (`async def before_start(self) -> None:`). All bot initialization should be done here, and most things like reading from files, setting up database connections can be done here instead of on_connect.
+- Enable support for bot to get access to inbox features, direct conversation and ability to respond to messages if messaged by user.
+- Add handler that is triggered when bot received message from user (`async def on_message(user_id, conversation_id, is_new_conversation)`). It is triggered when user sends in game message to bot, using either new conversation or existing conversation. If this is new conversation `is_new_conversation` will be set to True, otherwise it will be set to False.
+- Add support for bot to send message to user (`self.highrise.send_message(conversation_id, message, type, room_id)`). This can be only used on existing conversation, and will fail if conversation is not found. Bot can only send two types of messages, `text` and `invite`. Text is the normal message in which bot can send text to user, and invite is used to invite user to room. If type is invite then room_id must be provided in order to generate room invite for users.
+- Add support for bot to list conversations (`self.highrise.get_conversations(not_joined, last_id)`). This will return list of conversations opened with bot, there are two types of conversations, the ones bot has joined and unjoined. If `not_joined` is set to True then only unjoined conversations will be returned, otherwise only joined conversations will be returned. Response will also return number of unjoined conversations that bot has. This method will return at most 20 conversations ordered from newest to the oldest,  If `last_id` is provided then only conversations that are older than specified id will be returned.
+- Add support for bot to list messages in conversation (`self.highrise.get_messages(conversation_id, last_id)`). This will return list of messages in conversation, at most 20 messages will be returned ordered from newest to the oldest. If `last_id` is provided then only messages that are older than specified id will be returned. conversation_id must be from conversation that is available to bot.
+- Add support for bot to leave conversation (`self.highrise.leave_conversation(conversation_id)`). This will leave conversation, and bot will no longer receive messages from user in that conversation or have that conversation in his list. 
 
 ### 23.1.0b12 (2023-06-06)
 
