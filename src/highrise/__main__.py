@@ -104,6 +104,7 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
         t = throttler(5, 5)
         while True:
             await anext(t)
+            await bot.before_start()
             try:
                 async with ClientSession() as session:
                     base_url = environ.get(

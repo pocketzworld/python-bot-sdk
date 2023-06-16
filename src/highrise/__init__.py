@@ -85,6 +85,10 @@ class BaseBot:
 
     highrise: Highrise
 
+    async def before_start(self) -> None:
+        """Called before the bot starts."""
+        pass
+
     async def on_start(self, session_metadata: SessionMetadata) -> None:
         """On a connection to the room being established.
 
