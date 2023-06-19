@@ -32,7 +32,7 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
-### 23.1.0b13 UNRELEASED
+### 23.1.0b13 (2023-06-19)
 
 - Add optional hook that is triggered on bot startup (`async def before_start(self) -> None:`). All bot initialization should be done here, and most things like reading from files, setting up database connections can be done here instead of on_connect.
 - Enable support for bot to get access to inbox features, direct conversation and ability to respond to messages if messaged by user.
