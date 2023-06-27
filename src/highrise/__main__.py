@@ -16,7 +16,7 @@ from attrs import define
 from click import argument, command, option
 from quattro import TaskGroup
 
-from . import BaseBot, Highrise, Incoming, IncomingEvents, converter
+from . import BaseBot, Highrise, Incoming, IncomingEvents, WebAPI, converter
 from .models import (
     ChannelEvent,
     ChatEvent,
@@ -109,7 +109,7 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
             try:
                 async with ClientSession() as session:
                     base_url = environ.get(
-                        "HR_WEBAPI_URL",
+                        "HR_BOTAPI_URL",
                         "wss://highrise.game/web/webapi",
                     )
                     async with session.ws_connect(
@@ -139,6 +139,7 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                             ka_task.cancel()
                             return
                         bot_id = str(session_metadata.user_id)
+                        webapi = WebAPI()
                         chat = Highrise()
                         chat.ws = ws
                         chat.tg = tg
@@ -152,6 +153,7 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                                 f"does not match the recommended version for the API ({session_metadata.sdk_version})"
                             )
 
+                        bot.webapi = webapi
                         bot.highrise = chat
                         tg.create_task(bot.on_start(session_metadata))
                         while True:

@@ -4,9 +4,10 @@ from __future__ import annotations
 from asyncio import Queue, sleep
 from collections import Counter
 from itertools import count
+from os import environ
 from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, TypeVar, Union
 
-from aiohttp import ClientWebSocketResponse
+from aiohttp import ClientSession, ClientWebSocketResponse
 from cattrs.preconf.json import make_converter
 from quattro import TaskGroup
 
@@ -89,6 +90,7 @@ class BaseBot:
     """
 
     highrise: Highrise
+    webapi: WebAPI
 
     async def before_start(self, tg: TaskGroup) -> None:
         """Called before the bot starts."""
@@ -312,6 +314,42 @@ class Highrise:
 
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
+
+
+class WebAPI:
+    url: str = environ.get("HR_WEBAPI_URL", "https://webapi.highrise.game")
+
+    async def get_user(self, user_id: str):
+        endpoint = f"/users/{user_id}"
+        return await self.send_request(endpoint)
+
+    async def get_users(self, starts_after=None, ends_before=None, limit=None):
+        endpoint = f"/users?starts_after={starts_after}&ends_before={ends_before}&limit={limit}"
+        return await self.send_request(endpoint)
+
+    async def get_room(self, room_id: str):
+        endpoint = f"/rooms/{room_id}"
+        return await self.send_request(endpoint)
+
+    async def get_rooms(self, starts_after=None, ends_before=None, limit=None):
+        endpoint = f"/rooms?starts_after={starts_after}&ends_before={ends_before}&limit={limit}"
+        return await self.send_request(endpoint)
+
+    async def get_post(self, post_id: str):
+        endpoint = f"/posts/{post_id}"
+        return await self.send_request(endpoint)
+
+    async def get_posts(self, starts_after=None, ends_before=None, limit=None):
+        endpoint = f"/posts?starts_after={starts_after}&ends_before={ends_before}&limit={limit}"
+        return await self.send_request(endpoint)
+
+    async def send_request(self, endpoint):
+        async with ClientSession() as session:
+            async with session.get(f"{self.url}{endpoint}") as response:
+                if response.status == 200:
+                    return await response.json()
+                else:
+                    return None
 
 
 class ResponseError(Exception):
