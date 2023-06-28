@@ -14,6 +14,8 @@ from ._unions import configure_tagged_union
 from .models import (
     AnchorHitRequest,
     AnchorPosition,
+    BuyRoomBoostRequest,
+    BuyVoiceTimeRequest,
     ChangeBackpackRequest,
     ChangeRoomPrivilegeRequest,
     ChannelEvent,
@@ -312,6 +314,31 @@ class Highrise:
         """Leave a conversation."""
         await _do_req_no_resp(self, LeaveConversationRequest(conversation_id))
 
+    async def buy_voice_time(
+        self,
+        payment: Literal[
+            "bot_wallet_only", "bot_wallet_priority", "user_wallet_only"
+        ] = "bot_wallet_only",
+    ) -> Literal["success", "insufficient_funds", "only_token_bought"] | Error:
+        """Buy voice time."""
+        res = await do_req_resp(self, BuyVoiceTimeRequest(payment))
+        if isinstance(res, Error):
+            return res
+        return res.result
+
+    async def buy_room_boost(
+        self,
+        payment: Literal[
+            "bot_wallet_only", "bot_wallet_priority", "user_wallet_only"
+        ] = "bot_wallet_only",
+        amount: int = 1,
+    ) -> Literal["success", "insufficient_funds", "only_token_bought"] | Error:
+        """Buy room boost."""
+        res = await do_req_resp(self, BuyRoomBoostRequest(payment, amount))
+        if isinstance(res, Error):
+            return res
+        return res.result
+
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
 
@@ -386,6 +413,8 @@ Outgoing = (
     | SendMessageRequest
     | GetMessagesRequest
     | LeaveConversationRequest
+    | BuyVoiceTimeRequest
+    | BuyRoomBoostRequest
 )
 IncomingEvents = (
     Error

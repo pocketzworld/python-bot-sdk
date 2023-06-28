@@ -748,3 +748,42 @@ class LeaveConversationRequest:
         rid: str | None = None
 
     Response: ClassVar = LeaveConversationResponse
+
+
+@define
+class BuyVoiceTimeRequest:
+    """Buy a voice time for a room."""
+
+    payment_method: Literal[
+        "bot_wallet_only", "bot_wallet_priority", "user_wallet_only"
+    ]
+    rid: str | None = None
+
+    @define
+    class BuyVoiceTimeResponse:
+        """Buy a voice token."""
+
+        result: Literal["success", "insufficient_funds", "only_token_bought"]
+        rid: str | None = None
+
+    Response: ClassVar = BuyVoiceTimeResponse
+
+
+@define
+class BuyRoomBoostRequest:
+    """Buy a room boost."""
+
+    payment_method: Literal[
+        "bot_wallet_only", "bot_wallet_priority", "user_wallet_only"
+    ]
+    amount: int = 1
+    rid: str | None = None
+
+    @define
+    class BuyRoomBoostResponse:
+        """Buy a room boost."""
+
+        result: Literal["success", "insufficient_funds", "only_token_bought"]
+        rid: str | None = None
+
+    Response: ClassVar = BuyRoomBoostResponse
