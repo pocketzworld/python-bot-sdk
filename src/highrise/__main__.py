@@ -16,7 +16,7 @@ from attrs import define
 from click import argument, command, option
 from quattro import TaskGroup
 
-from . import BaseBot, Highrise, Incoming, IncomingEvents, WebAPI, converter
+from . import BaseBot, Highrise, Incoming, IncomingEvents, converter
 from .models import (
     ChannelEvent,
     ChatEvent,
@@ -38,6 +38,7 @@ from .models_control import (
     InstanceStoppedEvent,
 )
 from .models_control import converter as control_converter
+from .webapi import WebAPI
 
 KEEPALIVE_RATE: Final = 15
 READ_TIMEOUT: Final = 20
@@ -110,7 +111,7 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                 async with ClientSession() as session:
                     base_url = environ.get(
                         "HR_BOTAPI_URL",
-                        "wss://highrise.game/web/webapi",
+                        "wss://highrise.game/web/botapi",
                     )
                     async with session.ws_connect(
                         f"{base_url}{gather_subscriptions(bot)}",
