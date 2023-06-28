@@ -40,7 +40,10 @@ $ highrise mybot:Bot <room ID> <API token>
     - `self.webapi.get_rooms()`: Retrieves a list of rooms.
     - `self.webapi.get_post()`: Fetches a specific post by id.
     - `self.webapi.get_posts()`: Retrieves a list of posts.
-
+- Add a method to buy room boost for a room (`self.highrise.buy_room_boost(payment_type, amount)`).
+- Add a method to buy voice time for a room (`self.highrise.buy_voice_time(payment_type)`).
+- Both methods support several payment options `bot_wallet_only`, `bot_wallet_priority`, `user_wallet_only` allowing bot to use its own wallet or user's wallet to pay for the purchase. Or to try to prioritize bot's wallet over user's wallet.
+- Get wallet method will now return room_boost_tokens and voice_tokens if bot has any.
 
 ### 23.1.0b13 (2023-06-19)
 
