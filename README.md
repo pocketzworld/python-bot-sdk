@@ -33,6 +33,14 @@ $ highrise mybot:Bot <room ID> <API token>
 ## Changelog
 
 ### 23.1.0b14 (UNRELEASED)
+- Added Highrise Web API Support: Introduced helper methods within the BaseBot class accessible through `self.webapi`. This enables easy communication with the Highrise Web API to gain access to public information about the game. Included are the following methods:
+    - `self.webapi.get_user()`: Fetches a specific user by id.
+    - `self.webapi.get_users()`: Retrieves a list of users.
+    - `self.webapi.get_room()`: Fetches a specific room by id.
+    - `self.webapi.get_rooms()`: Retrieves a list of rooms.
+    - `self.webapi.get_post()`: Fetches a specific post by id.
+    - `self.webapi.get_posts()`: Retrieves a list of posts.
+
 
 ### 23.1.0b13 (2023-06-19)
 

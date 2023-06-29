@@ -38,6 +38,7 @@ from .models_control import (
     InstanceStoppedEvent,
 )
 from .models_control import converter as control_converter
+from .webapi import WebAPI
 
 KEEPALIVE_RATE: Final = 15
 READ_TIMEOUT: Final = 20
@@ -109,8 +110,8 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
             try:
                 async with ClientSession() as session:
                     base_url = environ.get(
-                        "HR_WEBAPI_URL",
-                        "wss://highrise.game/web/webapi",
+                        "HR_BOTAPI_URL",
+                        "wss://highrise.game/web/botapi",
                     )
                     async with session.ws_connect(
                         f"{base_url}{gather_subscriptions(bot)}",
@@ -139,6 +140,7 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                             ka_task.cancel()
                             return
                         bot_id = str(session_metadata.user_id)
+                        webapi = WebAPI()
                         chat = Highrise()
                         chat.ws = ws
                         chat.tg = tg
@@ -152,6 +154,7 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                                 f"does not match the recommended version for the API ({session_metadata.sdk_version})"
                             )
 
+                        bot.webapi = webapi
                         bot.highrise = chat
                         tg.create_task(bot.on_start(session_metadata))
                         while True:

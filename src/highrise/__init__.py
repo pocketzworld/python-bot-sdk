@@ -57,6 +57,7 @@ from .models import (
     UserMovedEvent,
     VoiceEvent,
 )
+from .webapi import WebAPI
 
 if TYPE_CHECKING:
     from attrs import AttrsInstance
@@ -89,6 +90,7 @@ class BaseBot:
     """
 
     highrise: Highrise
+    webapi: WebAPI
 
     async def before_start(self, tg: TaskGroup) -> None:
         """Called before the bot starts."""
