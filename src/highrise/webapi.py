@@ -30,7 +30,7 @@ class WebAPI:
     structured response based on the response JSON and webapi models.
     """
 
-    url: str = environ.get("HR_WEBAPI_URL", "https://rc-webapi.highrise.game")
+    url: str = environ.get("HR_WEBAPI_URL", "https://webapi.highrise.game")
 
     async def get_user(self, user_id: str) -> GetPublicUserResponse:
         """Fetch a single user given its user_id.
@@ -57,7 +57,17 @@ class WebAPI:
         Returns:
             GetPublicUsersResponse: A list of public data of users.
         """
-        endpoint = f"/users?starts_after={starts_after}&ends_before={ends_before}&sort_order={sort_order}&limit={limit}&username={username}"
+        params = {
+            "starts_after": starts_after,
+            "ends_before": ends_before,
+            "sort_order": sort_order,
+            "limit": limit,
+            "username": username
+        }
+        
+        params = {k: v for k, v in params.items() if v is not None}
+        
+        endpoint = f"/users?{'&'.join(f'{k}={v}' for k, v in params.items())}"    
         return await self.send_request(endpoint, GetPublicUsersResponse)
 
     async def get_room(self, room_id: str) -> GetPublicRoomResponse:
@@ -86,7 +96,18 @@ class WebAPI:
         Returns:
             GetPublicRoomsResponse: A list of public data of rooms.
         """
-        endpoint = f"/rooms?starts_after={starts_after}&ends_before={ends_before}&sort_order={sort_order}&limit={limit}&room_name={room_name}&owner_id={owner_id}"
+        params = {
+            "starts_after": starts_after,
+            "ends_before": ends_before,
+            "sort_order": sort_order,
+            "limit": limit,
+            "room_name": room_name,
+            "owner_id": owner_id
+        }
+        
+        params = {k: v for k, v in params.items() if v is not None}
+        
+        endpoint = f"/users?{'&'.join(f'{k}={v}' for k, v in params.items())}"    
         return await self.send_request(endpoint, GetPublicRoomsResponse)
 
     async def get_post(self, post_id: str) -> GetPublicPostResponse:
@@ -114,7 +135,17 @@ class WebAPI:
         Returns:
             GetPublicPostsResponse: A list of public data of posts.
         """
-        endpoint = f"/posts?starts_after={starts_after}&ends_before={ends_before}&sort_order={sort_order}&limit={limit}&author_id={author_id}"
+        params = {
+            "starts_after": starts_after,
+            "ends_before": ends_before,
+            "sort_order": sort_order,
+            "limit": limit,
+            "author_id": author_id,
+        }
+        
+        params = {k: v for k, v in params.items() if v is not None}
+        
+        endpoint = f"/users?{'&'.join(f'{k}={v}' for k, v in params.items())}" 
         return await self.send_request(endpoint, GetPublicPostsResponse)
 
     async def send_request(self, endpoint: str, cl: Type[Any]) -> Any:
