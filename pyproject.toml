@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "highrise-bot-sdk"
-version = "23.1.0.b14"
+version = "23.1.0.b15"
 description = "The Highrise Bot SDK, for running Highrise bots written in Python."
 authors = ["Pocket Worlds Inc <server@high.rs>"]
 license = "proprietary"
@@ -21,7 +21,7 @@ typing_extensions = "<4.0.0"
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
 isort = "^5.12.0"
-mypy = "^1.1.1"
+mypy = "<1.3.1"
 flake8 = "^6.0.0"
 types-setuptools = "^67.6.0.7"
 

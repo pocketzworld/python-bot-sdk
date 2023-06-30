@@ -1,7 +1,7 @@
 from attrs import define
 from cattrs.preconf.json import make_converter
-from cattrs.strategies import configure_tagged_union
 
+from ._unions import configure_tagged_union
 from .models import KeepaliveRequest
 
 converter = make_converter()
