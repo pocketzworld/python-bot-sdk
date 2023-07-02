@@ -81,9 +81,8 @@ class User:
     username: str
     outfit: list[OutfitItem]
     bio: str
-    badge: int
     joined_at: DateTime
-    last_online_in: int | None
+    last_online_in: DateTime | None
     num_followers: int
     num_following: int
     num_friends: int
