@@ -787,3 +787,31 @@ class BuyRoomBoostRequest:
         rid: str | None = None
 
     Response: ClassVar = BuyRoomBoostResponse
+
+
+@define
+class TipUserRequest:
+    """Tip a user."""
+
+    user_id: str
+    gold_bar: Literal[
+        "gold_bar_1",
+        "gold_bar_5",
+        "gold_bar_10",
+        "gold_bar_50",
+        "gold_bar_100",
+        "gold_bar_500",
+        "gold_bar_1k",
+        "gold_bar_5000",
+        "gold_bar_10k",
+    ]
+    rid: str | None = None
+
+    @define
+    class TipUserResponse:
+        """Tip a user."""
+
+        result: Literal["success", "insufficient_funds"]
+        rid: str | None = None
+
+    Response: ClassVar = TipUserResponse

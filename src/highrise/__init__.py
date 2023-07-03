@@ -53,6 +53,7 @@ from .models import (
     SessionMetadata,
     TeleportRequest,
     TipReactionEvent,
+    TipUserRequest,
     User,
     UserJoinedEvent,
     UserLeftEvent,
@@ -339,6 +340,27 @@ class Highrise:
             return res
         return res.result
 
+    async def tip_user(
+        self,
+        user_id: str,
+        tip: Literal[
+            "gold_bar_1",
+            "gold_bar_5",
+            "gold_bar_10",
+            "gold_bar_50",
+            "gold_bar_100",
+            "gold_bar_500",
+            "gold_bar_1k",
+            "gold_bar_5000",
+            "gold_bar_10k",
+        ],
+    ) -> Literal["success", "insufficient_funds"] | Error:
+        """Tip a user."""
+        res = await do_req_resp(self, TipUserRequest(user_id, tip))
+        if isinstance(res, Error):
+            return res
+        return res.result
+
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
 
@@ -415,6 +437,7 @@ Outgoing = (
     | LeaveConversationRequest
     | BuyVoiceTimeRequest
     | BuyRoomBoostRequest
+    | TipUserRequest
 )
 IncomingEvents = (
     Error

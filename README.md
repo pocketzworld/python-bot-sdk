@@ -7,7 +7,7 @@ The Highrise Python Bot SDK is a python library for writing and running Highrise
 First, install the library (preferably in a virtual environment):
 
 ```shell
-$ pip install highrise-bot-sdk==23.1.0b16
+$ pip install highrise-bot-sdk==23.2.0
 ```
 
 In the [`Settings` section of the Highrise website](https://highrise.game/account/settings), create a bot and generate the API token. You'll need the token to start your bot later.
@@ -31,6 +31,18 @@ $ highrise mybot:Bot <room ID> <API token>
 ```
 
 ## Changelog
+
+### 23.2.0 (UNRELEASED)
+- Add support to tip users in the room (`self.highrise.tip_user(user_id, amount)`). Amount needs to be expressed in gold bars. Possible values are:
+  "gold_bar_1",
+  "gold_bar_5",
+  "gold_bar_10",
+  "gold_bar_50",
+  "gold_bar_100",
+  "gold_bar_500",
+  "gold_bar_1k",
+  "gold_bar_5000",
+  "gold_bar_10k",
 
 ### 23.1.0b16 (2023-07-03)
 - Hotfix web-api models issue.
