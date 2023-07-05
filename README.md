@@ -32,7 +32,7 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
-### 23.2.0 (UNRELEASED)
+### 23.2.0 (2023-07-5)
 - Add support to tip users in the room (`self.highrise.tip_user(user_id, amount)`). Amount needs to be expressed in gold bars. Possible values are:
   "gold_bar_1",
   "gold_bar_5",
