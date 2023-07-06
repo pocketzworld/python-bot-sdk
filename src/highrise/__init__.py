@@ -14,6 +14,7 @@ from ._unions import configure_tagged_union
 from .models import (
     AnchorHitRequest,
     AnchorPosition,
+    BuyItemRequest,
     BuyRoomBoostRequest,
     BuyVoiceTimeRequest,
     ChangeBackpackRequest,
@@ -30,6 +31,7 @@ from .models import (
     FloorHitRequest,
     GetBackpackRequest,
     GetConversationsRequest,
+    GetInventoryRequest,
     GetMessagesRequest,
     GetRoomPrivilegeRequest,
     GetRoomUsersRequest,
@@ -51,6 +53,7 @@ from .models import (
     RoomPermissions,
     SendMessageRequest,
     SessionMetadata,
+    SetOutfitRequest,
     TeleportRequest,
     TipReactionEvent,
     TipUserRequest,
@@ -161,6 +164,7 @@ class BaseBot:
 
 
 class Highrise:
+    my_id: str
     ws: ClientWebSocketResponse
     tg: TaskGroup
     _req_id = count()
@@ -361,6 +365,36 @@ class Highrise:
             return res
         return res.result
 
+    async def get_my_outfit(self) -> GetUserOutfitRequest.GetUserOutfitResponse | Error:
+        """Get the bot's outfit."""
+        res = await do_req_resp(self, GetUserOutfitRequest(self.my_id))
+        if isinstance(res, Error):
+            return res
+        return res
+
+    async def get_inventory(self) -> GetInventoryRequest.GetInventoryResponse | Error:
+        """Get the bot's inventory."""
+        res = await do_req_resp(self, GetInventoryRequest())
+        if isinstance(res, Error):
+            return res
+        return res
+
+    async def set_outfit(self, outfit: list[Item]) -> None | Error:
+        """Set the bot's outfit."""
+        resp = await do_req_resp(self, SetOutfitRequest(outfit))
+        if isinstance(resp, Error):
+            return resp
+        return None
+
+    async def buy_item(
+        self, item_id: str
+    ) -> Literal["success", "insufficient_funds"] | Error:
+        """Buy an item."""
+        resp = await do_req_resp(self, BuyItemRequest(item_id))
+        if isinstance(resp, Error):
+            return resp
+        return resp.result
+
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
 
@@ -438,6 +472,9 @@ Outgoing = (
     | BuyVoiceTimeRequest
     | BuyRoomBoostRequest
     | TipUserRequest
+    | SetOutfitRequest
+    | GetInventoryRequest
+    | BuyItemRequest
 )
 IncomingEvents = (
     Error

@@ -58,6 +58,8 @@ class Item:
     type: Literal["clothing"]
     amount: int
     id: str
+    account_bound: bool = False
+    active_palette: int | None = None
 
 
 @define
@@ -815,3 +817,52 @@ class TipUserRequest:
         rid: str | None = None
 
     Response: ClassVar = TipUserResponse
+
+
+@define
+class GetInventoryRequest:
+    """Get the inventory of a bot."""
+
+    rid: str | None = None
+
+    @define
+    class GetInventoryResponse:
+        """Get the inventory of a bot."""
+
+        items: list[Item]
+        rid: str | None = None
+
+    Response: ClassVar = GetInventoryResponse
+
+
+@define
+class SetOutfitRequest:
+    """Set the outfit of a bot."""
+
+    outfit: list[Item]
+    rid: str | None = None
+
+    @define
+    class SetOutfitResponse:
+        """Set the outfit of a bot."""
+
+        rid: str | None = None
+
+    Response: ClassVar = SetOutfitResponse
+
+
+@define
+class BuyItemRequest:
+    """Buy an item."""
+
+    item_id: str
+    rid: str | None = None
+
+    @define
+    class BuyItemResponse:
+        """Buy an item."""
+
+        result: Literal["success", "insufficient_funds"]
+        rid: str | None = None
+
+    Response: ClassVar = BuyItemResponse

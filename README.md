@@ -33,6 +33,10 @@ $ highrise mybot:Bot <room ID> <API token>
 ## Changelog
 
 ### 23.3.0 (UNRELEASED)
+- Add support for bot to get its inventory(`self.highrise.get_inventory()`). It returns list of items that bot has in its inventory.
+- Add support for bot to get its own outfit(`self.highrise.get_outfit()`). It returns list of items that bot has equipped.
+- Add support for bot to change his outfit(`self.highrise.set_outfit(outfit)`). It takes list of items that bot should equip. Bot can equip free items or items in his own inventory.
+- Add support for buying items as a bot(`self.highrise.buy_item(item_id)`). It takes item id and attempts to buy this item from highrise. Note bot can only use his own wallet to buy items. Some items are not available for purchase. Take note that bots can only equip those items and not trade them, there is no use in buying items more than one time.
 - Added items and grabs helper methods for Highrise Web API: 
     - `self.webapi.get_item()`: Fetches a specific item by id.
     - `self.webapi.get_items()`: Retrieves a list of items.

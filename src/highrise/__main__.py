@@ -142,6 +142,7 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                         bot_id = str(session_metadata.user_id)
                         webapi = WebAPI()
                         chat = Highrise()
+                        chat.my_id = bot_id
                         chat.ws = ws
                         chat.tg = tg
 
