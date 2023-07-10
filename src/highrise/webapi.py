@@ -12,6 +12,9 @@ from .models_webapi import (
     GetPublicRoomsResponse,
     GetPublicUserResponse,
     GetPublicUsersResponse,
+    GetPublicItemResponse,
+    GetPublicItemsResponse,
+    ItemCategory
 )
 
 converter = Converter()
@@ -36,7 +39,7 @@ class WebAPI:
         """Fetch a single user given its user_id.
 
         Args:
-            user_id (str): The unique identifier for a user.
+            user_id: The unique identifier for a user.
 
         Returns:
             GetPublicUserResponse: The public data of the user.
@@ -46,13 +49,16 @@ class WebAPI:
 
     async def get_users(
         self,
-        starts_after: str = "",
-        ends_before: str = "",
+        starts_after: str | None = None,
+        ends_before: str | None = None,
         sort_order: SORT_OPTION = "desc",
         limit: int = 20,
-        username: str = "",
+        username: str | None = None,
     ) -> GetPublicUsersResponse:
         """Fetch a list of users, can be filtered, ordered, and paginated.
+
+        Args:
+            username: The username of a user.
 
         Returns:
             GetPublicUsersResponse: A list of public data of users.
@@ -74,7 +80,7 @@ class WebAPI:
         """Fetch a single room given its room_id.
 
         Args:
-            room_id (str): The unique identifier for a room.
+            room_id: The unique identifier for a room.
 
         Returns:
             GetPublicRoomResponse: The public data of the room.
@@ -84,14 +90,18 @@ class WebAPI:
 
     async def get_rooms(
         self,
-        starts_after: str = "",
-        ends_before: str = "",
+        starts_after: str | None = None,
+        ends_before: str | None = None,
         sort_order: SORT_OPTION = "desc",
         limit: int = 20,
-        room_name: str = "",
-        owner_id: str = "",
+        room_name: str | None = None,
+        owner_id: str | None = None,
     ) -> GetPublicRoomsResponse:
         """Fetch a list of rooms, can be filtered, ordered, and paginated.
+
+        Args:
+            room_name: The name of a room.
+            owner_id: The unique identifier of the owner of a room.
 
         Returns:
             GetPublicRoomsResponse: A list of public data of rooms.
@@ -107,14 +117,14 @@ class WebAPI:
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"/users?{'&'.join(f'{k}={v}' for k, v in params.items())}"
+        endpoint = f"/rooms?{'&'.join(f'{k}={v}' for k, v in params.items())}"
         return await self.send_request(endpoint, GetPublicRoomsResponse)
 
     async def get_post(self, post_id: str) -> GetPublicPostResponse:
         """Fetch a single post given its post_id.
 
         Args:
-            post_id (str): The unique identifier for a post.
+            post_id: The unique identifier for a post.
 
         Returns:
             GetPublicPostResponse: The public data of the post.
@@ -124,13 +134,16 @@ class WebAPI:
 
     async def get_posts(
         self,
-        starts_after: str = "",
-        ends_before: str = "",
+        starts_after: str | None = None,
+        ends_before: str | None = None,
         sort_order: SORT_OPTION = "desc",
         limit: int = 20,
-        author_id: str = "",
+        author_id: str | None = None,
     ) -> GetPublicPostsResponse:
         """Fetch a list of posts, can be filtered, ordered, and paginated.
+
+        Args:
+            author_id: The unique identifier of the author of a post.
 
         Returns:
             GetPublicPostsResponse: A list of public data of posts.
@@ -145,8 +158,55 @@ class WebAPI:
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"/users?{'&'.join(f'{k}={v}' for k, v in params.items())}"
+        endpoint = f"/posts?{'&'.join(f'{k}={v}' for k, v in params.items())}"
         return await self.send_request(endpoint, GetPublicPostsResponse)
+    
+    async def get_item(self, item_id: str) -> GetPublicItemResponse:
+        """Fetch a single item given its item_id.
+
+        Args:
+            item_id: The unique identifier for a item.
+
+        Returns:
+            GetPublicItemResponse: The public data of the item.
+        """
+        endpoint = f"/items/{item_id}"
+        return await self.send_request(endpoint, GetPublicItemResponse)
+
+    async def get_items(
+        self,
+        starts_after: str | None = None,
+        ends_before: str | None = None,
+        sort_order: SORT_OPTION = "desc",
+        limit: int = 20,
+        rarity: str | None = None,
+        item_name: str | None = None,
+        category: ItemCategory | None = None
+    ) -> GetPublicItemsResponse:
+        """Fetch a list of items, can be filtered, ordered, and paginated.
+
+        Args:
+            rarity: The rarities of items to filter for, comma separated (eg: `rare,epic,legendary`).
+            item_name: The name of the item.
+            category: The category of the item.
+
+        Returns:
+            GetPublicPostsResponse: A list of public data of posts.
+        """
+        params = {
+            "starts_after": starts_after,
+            "ends_before": ends_before,
+            "sort_order": sort_order,
+            "limit": limit,
+            "rarity": rarity,
+            "item_name": item_name,
+            "category": category
+        }
+
+        params = {k: v for k, v in params.items() if v is not None}
+
+        endpoint = f"/items?{'&'.join(f'{k}={v}' for k, v in params.items())}"
+        return await self.send_request(endpoint, GetPublicItemsResponse)
 
     async def send_request(self, endpoint: str, cl: Type[Any]) -> Any:
         """
