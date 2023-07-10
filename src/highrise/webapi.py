@@ -14,7 +14,9 @@ from .models_webapi import (
     GetPublicUsersResponse,
     GetPublicItemResponse,
     GetPublicItemsResponse,
-    ItemCategory
+    GetPublicGrabResponse,
+    GetPublicGrabsResponse,
+    ItemCategory,
 )
 
 converter = Converter()
@@ -160,7 +162,7 @@ class WebAPI:
 
         endpoint = f"/posts?{'&'.join(f'{k}={v}' for k, v in params.items())}"
         return await self.send_request(endpoint, GetPublicPostsResponse)
-    
+
     async def get_item(self, item_id: str) -> GetPublicItemResponse:
         """Fetch a single item given its item_id.
 
@@ -181,7 +183,7 @@ class WebAPI:
         limit: int = 20,
         rarity: str | None = None,
         item_name: str | None = None,
-        category: ItemCategory | None = None
+        category: ItemCategory | None = None,
     ) -> GetPublicItemsResponse:
         """Fetch a list of items, can be filtered, ordered, and paginated.
 
@@ -200,13 +202,54 @@ class WebAPI:
             "limit": limit,
             "rarity": rarity,
             "item_name": item_name,
-            "category": category
+            "category": category,
         }
 
         params = {k: v for k, v in params.items() if v is not None}
 
         endpoint = f"/items?{'&'.join(f'{k}={v}' for k, v in params.items())}"
         return await self.send_request(endpoint, GetPublicItemsResponse)
+
+    async def get_grab(self, grab_id: str) -> GetPublicGrabResponse:
+        """Fetch a single grab given its grab_id.
+
+        Args:
+            grab_id: The unique identifier for a grab.
+
+        Returns:
+            GetPublicGrabResponse: The public data of the grab.
+        """
+        endpoint = f"/grabs/{grab_id}"
+        return await self.send_request(endpoint, GetPublicGrabResponse)
+
+    async def get_grabs(
+        self,
+        starts_after: str | None = None,
+        ends_before: str | None = None,
+        sort_order: SORT_OPTION = "desc",
+        limit: int = 20,
+        title: str | None = None,
+    ) -> GetPublicGrabsResponse:
+        """Fetch a list of grabs, can be filtered, ordered, and paginated.
+
+        Args:
+            title: The title of the grab.
+
+        Returns:
+            GetPublicGrabsResponse: A list of public data of grabs.
+        """
+        params = {
+            "starts_after": starts_after,
+            "ends_before": ends_before,
+            "sort_order": sort_order,
+            "limit": limit,
+            "title": title,
+        }
+
+        params = {k: v for k, v in params.items() if v is not None}
+
+        endpoint = f"/grabs?{'&'.join(f'{k}={v}' for k, v in params.items())}"
+        return await self.send_request(endpoint, GetPublicGrabsResponse)
 
     async def send_request(self, endpoint: str, cl: Type[Any]) -> Any:
         """
