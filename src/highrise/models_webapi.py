@@ -439,7 +439,13 @@ class Reward:
 @define
 class LimitedKompuReward:
     expires_at: DateTime | None = None
-    rewards: list[Reward] = Factory(list)
+    rewards: list[Reward] = []
+
+
+@define
+class ProgressReward:
+    rewards_at: int
+    rewards: list[Reward] = []
 
 
 @define
@@ -458,3 +464,4 @@ class Grab:
     kompu_rewards: list[Reward] = []
     is_tradable: bool = True
     limited_time_kompu: LimitedKompuReward | None = None
+    progress_reward: ProgressReward | None = None
