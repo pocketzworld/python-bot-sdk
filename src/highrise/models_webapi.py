@@ -61,6 +61,19 @@ class GetPublicItemsResponse:
     last_id: str
 
 
+@define
+class GetPublicGrabResponse:
+    grab: Grab
+
+
+@define
+class GetPublicGrabsResponse:
+    grabs: list[Grab]
+    total: int
+    first_id: str
+    last_id: str
+
+
 @unique
 class ItemCategory(str, Enum):
     BAG = "bag"
@@ -107,6 +120,38 @@ class Rarity(str, Enum):
     EPIC = "epic"
     LEGENDARY = "legendary"
     NONE = "none_"
+
+
+@unique
+class LegacyRewardCategory(str, Enum):
+    POPS = "pops"
+    GEMS = "gems"
+    OUTFIT = "outfit"
+    GACHA_TOKENS = "gacha_tokens"
+    FURNITURE = "furniture"
+    COLLECTIBLE = "collectible"
+    LUCKY_TOKENS = "lucky_tokens"
+    EVENT_TICKETS = "event_tickets"
+    EMOTE = "emote"
+    GIFT_BOX = "gift_box"
+    ENERGY = "energy"
+    VIP_DAYS = "vip_days"
+    CHIPS = "chips"
+    PROMO_TOKENS = "promo_tokens"
+    SKYPASS_STARS = "skypass_stars"
+    ROOM_BOOST_TOKENS = "room_boost_tokens"
+    ROOM_VOICE_TOKENS = "room_voice_tokens"
+    POCKET_COINS = "pocket_coins"
+    CASH = "cash"
+    CUSTOM_CURRENCY = "custom_currency"
+    PET = "pet"
+
+
+@unique
+class NFIStrategy(str, Enum):
+    SEQUENTIAL = "sequential"
+    TOTAL_DEFINED = "total_defined"
+    POOL = "pool"
 
 
 @define
@@ -361,3 +406,62 @@ class StorefrontListings:
     sellers: list[Seller] = []
     pages: int = 0
     total: int = 0
+
+
+@define
+class NFIItemMetadata:
+    item_number: int
+    stack_id: str
+
+
+@define
+class NFITemplateMetadata:
+    strategy: NFIStrategy
+    total_amount: int | None = None
+
+
+@define
+class ItemMetadata:
+    nfi_metadata: NFIItemMetadata | None = None
+    nfi_template_metadata: NFITemplateMetadata | None = None
+
+
+@define
+class Reward:
+    category: LegacyRewardCategory
+    amount: int
+    reward_id: str = ""
+    item_id: str | None = None
+    account_bound: bool = False
+    metadata: ItemMetadata | None = None
+
+
+@define
+class LimitedKompuReward:
+    expires_at: DateTime | None = None
+    rewards: list[Reward] = []
+
+
+@define
+class ProgressReward:
+    rewards_at: int
+    rewards: list[Reward] = []
+
+
+@define
+class Grab:
+    grab_id: str
+    title: str
+    description: str
+    background_color: tuple[int, int, int]
+    banner_img_url: str
+    starts_at: DateTime | None = None
+    expires_at: DateTime | None = None
+    rewards: list[Reward] = []
+    primary_img_url: str | None = None
+    secondary_img_url: str | None = None
+    costs: list[Reward] = []
+    kompu_rewards: list[Reward] = []
+    is_tradable: bool = True
+    limited_time_kompu: LimitedKompuReward | None = None
+    progress_reward: ProgressReward | None = None

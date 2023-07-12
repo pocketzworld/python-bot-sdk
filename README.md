@@ -33,6 +33,11 @@ $ highrise mybot:Bot <room ID> <API token>
 ## Changelog
 
 ### 23.3.0 (UNRELEASED)
+- Added items and grabs helper methods for Highrise Web API: 
+    - `self.webapi.get_item()`: Fetches a specific item by id.
+    - `self.webapi.get_items()`: Retrieves a list of items.
+    - `self.webapi.get_grab()`: Fetches a specific grab by id.
+    - `self.webapi.get_grabs()`: Retrieves a list of rooms.
 
 ### 23.2.0 (2023-07-5)
 - Add support to tip users in the room (`self.highrise.tip_user(user_id, amount)`). Amount needs to be expressed in gold bars. Possible values are:
