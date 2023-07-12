@@ -188,7 +188,7 @@ class WebAPI:
         """Fetch a list of items, can be filtered, ordered, and paginated.
 
         Args:
-            rarity: The rarities of items to filter for, comma separated (eg: `rare,epic,legendary`).
+            rarity: The rarities of items to filter for, comma separated (eg: `rare,epic,legendary,none` or `rare`).
             item_name: The name of the item.
             category: The category of the item.
 
