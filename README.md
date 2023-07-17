@@ -32,7 +32,7 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
-### 23.3.0 (UNRELEASED)
+### 23.3.0 (2023-07-17)
 - Add support for bot to get its inventory(`self.highrise.get_inventory()`). It returns list of items that bot has in its inventory.
 - Add support for bot to get its own outfit(`self.highrise.get_outfit()`). It returns list of items that bot has equipped.
 - Add support for bot to change his outfit(`self.highrise.set_outfit(outfit)`). It takes list of items that bot should equip. Bot can equip free items or items in his own inventory.
