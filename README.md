@@ -7,7 +7,7 @@ The Highrise Python Bot SDK is a python library for writing and running Highrise
 First, install the library (preferably in a virtual environment):
 
 ```shell
-$ pip install highrise-bot-sdk==23.3.0
+$ pip install highrise-bot-sdk==23.3.1
 ```
 
 In the [`Settings` section of the Highrise website](https://highrise.game/account/settings), create a bot and generate the API token. You'll need the token to start your bot later.
@@ -29,8 +29,12 @@ When you're ready, run the bot from the terminal using the SDK, giving it the Py
 ```
 $ highrise mybot:Bot <room ID> <API token>
 ```
-
+Ñ
 ## Changelog
+
+### 23.3.1 (UNRELEASED)
+
+- Add position to `on_user_join` handle, this will allow bots to know what the user's location is on room join.
 
 ### 23.3.0 (2023-07-17)
 - Add support for bot to get its inventory(`self.highrise.get_inventory()`). It returns list of items that bot has in its inventory.

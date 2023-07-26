@@ -210,8 +210,8 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                                     tg.create_task(
                                         bot.on_reaction(user, reaction, receiver)
                                     )
-                                case UserJoinedEvent(user=user):
-                                    tg.create_task(bot.on_user_join(user))
+                                case UserJoinedEvent(user=user, position=pos):
+                                    tg.create_task(bot.on_user_join(user, pos))
                                 case UserLeftEvent(user=user):
                                     tg.create_task(bot.on_user_leave(user))
                                 case TipReactionEvent(

@@ -521,6 +521,7 @@ class UserJoinedEvent:
     """
 
     user: User
+    position: Position | AnchorPosition
 
 
 @define

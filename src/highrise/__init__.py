@@ -126,7 +126,9 @@ class BaseBot:
         """Called when someone reacts in the room."""
         pass
 
-    async def on_user_join(self, user: User) -> None:
+    async def on_user_join(
+        self, user: User, position: Position | AnchorPosition
+    ) -> None:
         """On a user joining the room."""
         pass
 
