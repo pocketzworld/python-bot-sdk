@@ -29,10 +29,10 @@ When you're ready, run the bot from the terminal using the SDK, giving it the Py
 ```
 $ highrise mybot:Bot <room ID> <API token>
 ```
-Ñ
+
 ## Changelog
 
-### 23.3.1 (UNRELEASED)
+### 23.3.1 (2023-08-02)
 
 - Add position to `on_user_join` handle, this will allow bots to know what the user's location is on room join.
 
