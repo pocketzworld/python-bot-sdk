@@ -7,7 +7,7 @@ The Highrise Python Bot SDK is a python library for writing and running Highrise
 First, install the library (preferably in a virtual environment):
 
 ```shell
-$ pip install highrise-bot-sdk==23.3.1
+$ pip install highrise-bot-sdk==23.3.2
 ```
 
 In the [`Settings` section of the Highrise website](https://highrise.game/account/settings), create a bot and generate the API token. You'll need the token to start your bot later.
@@ -31,6 +31,10 @@ $ highrise mybot:Bot <room ID> <API token>
 ```
 
 ## Changelog
+
+### 23.3.2 (UNRELEASED)
+
+- Lower time needed to launch multiple bots in the same process. 
 
 ### 23.3.1 (2023-08-02)
 

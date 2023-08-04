@@ -97,8 +97,8 @@ async def main(definitions: list[BotDefinition]) -> None:
 
             tg.create_task(bot_runner(bot, room_id, api_key))
             if len(definitions) > 1:
-                print("Bot started. Waiting 10 seconds before starting the next bot.")
-            await sleep(10)
+                print("Bot started. Waiting 1 second(s) before starting the next bot.")
+            await sleep(1)
 
 
 async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
