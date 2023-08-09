@@ -32,10 +32,11 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
-### 23.3.2 (UNRELEASED)
+### 23.3.2 (2023-08-10)
 
 - Lower time needed to launch multiple bots in the same process.
-- Add support for `RoomModeratedEvent`, bot can now override `on_moderate()` method to handle this event. Triggered when room is moderated by any user.
+- Add support for `RoomModeratedEvent`, bot can now override `on_moderate()` metho to handle this event. Triggered when room is moderated by any user.
+- Add support for discord handle in webapi user model.
 
 ### 23.3.1 (2023-08-02)
 
