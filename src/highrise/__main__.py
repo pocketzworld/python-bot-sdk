@@ -24,6 +24,7 @@ from .models import (
     Error,
     MessageEvent,
     ReactionEvent,
+    RoomModeratedEvent,
     SessionMetadata,
     TipReactionEvent,
     UserJoinedEvent,
@@ -232,6 +233,20 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                                     tg.create_task(
                                         bot.on_message(user_id, conv_id, is_new)
                                     )
+                                case RoomModeratedEvent(
+                                    moderatorId=moderator_id,
+                                    targetUserId=target_user_id,
+                                    moderationType=moderation_type,
+                                    duration=duration,
+                                ):
+                                    tg.create_task(
+                                        bot.on_moderate(
+                                            moderator_id,
+                                            target_user_id,
+                                            moderation_type,
+                                            duration,
+                                        )
+                                    )
             except (ConnectionResetError, WSServerHandshakeError, TimeoutError):
                 # The throttler should kick in up-code.
                 print("ERROR: reconnecting...")
@@ -276,6 +291,7 @@ def gather_subscriptions(bot: BaseBot) -> str:
         "on_voice_change": "voice",
         "on_channel": "channel",
         "on_message": "message",
+        "on_moderate": "moderation",
     }
 
     subscriptions = {

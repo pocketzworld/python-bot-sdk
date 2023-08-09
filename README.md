@@ -34,7 +34,8 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ### 23.3.2 (UNRELEASED)
 
-- Lower time needed to launch multiple bots in the same process. 
+- Lower time needed to launch multiple bots in the same process.
+- Add support for `RoomModeratedEvent`, bot can now override `on_moderate()` method to handle this event. Triggered when room is moderated by any user.
 
 ### 23.3.1 (2023-08-02)
 

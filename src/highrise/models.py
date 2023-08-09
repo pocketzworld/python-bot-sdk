@@ -593,6 +593,18 @@ class MessageEvent:
 
 
 @define
+class RoomModeratedEvent:
+    """A moderation event happened in room. This event is sent when a user is muted, unmuted, kicked, banned or unbanned.
+    Muted and banned events can also have duration field which indicates how long the user is muted or banned for.
+    """
+
+    moderatorId: str
+    targetUserId: str
+    moderationType: Literal["kick", "mute", "unmute", "ban", "unban"]
+    duration: int | None
+
+
+@define
 class CheckVoiceChatRequest:
     """
     Check the voice chat status in the room.

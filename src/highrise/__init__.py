@@ -50,6 +50,7 @@ from .models import (
     ReactionEvent,
     ReactionRequest,
     RemoveSpeakerRequest,
+    RoomModeratedEvent,
     RoomPermissions,
     SendMessageRequest,
     SessionMetadata,
@@ -162,6 +163,16 @@ class BaseBot:
         self, user_id: str, conversation_id: str, is_new_conversation: bool
     ) -> None:
         """On a inbox message received from a user."""
+        pass
+
+    async def on_moderate(
+        self,
+        moderator_id: str,
+        target_user_id: str,
+        moderation_type: Literal["kick", "mute", "unmute", "ban", "unban"],
+        duration: int | None,
+    ) -> None:
+        """When room moderation event is triggered."""
         pass
 
 
@@ -490,6 +501,7 @@ IncomingEvents = (
     | UserMovedEvent
     | VoiceEvent
     | MessageEvent
+    | RoomModeratedEvent
 )
 
 
