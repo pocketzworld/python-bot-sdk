@@ -32,6 +32,10 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
+### 23.3.3 (2023-08-11)
+
+- Change webapi model for User to match the one used in game.
+
 ### 23.3.2 (2023-08-10)
 
 - Lower time needed to launch multiple bots in the same process.

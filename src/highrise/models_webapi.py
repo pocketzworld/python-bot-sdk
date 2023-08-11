@@ -199,7 +199,7 @@ class User:
     country_code: str
     crew: Optional[Crew]
     voice_enabled: bool
-    discord_handle: str | None = None
+    discord_id: str | None = None
 
 
 @define
