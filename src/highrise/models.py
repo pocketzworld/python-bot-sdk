@@ -102,6 +102,7 @@ class Error:
     """
 
     message: str
+    do_not_reconnect: bool = False
     rid: str | None = None
 
 
@@ -769,9 +770,7 @@ class LeaveConversationRequest:
 class BuyVoiceTimeRequest:
     """Buy a voice time for a room."""
 
-    payment_method: Literal[
-        "bot_wallet_only", "bot_wallet_priority", "user_wallet_only"
-    ]
+    payment_method: Literal["bot_wallet_only"]
     rid: str | None = None
 
     @define
@@ -788,9 +787,7 @@ class BuyVoiceTimeRequest:
 class BuyRoomBoostRequest:
     """Buy a room boost."""
 
-    payment_method: Literal[
-        "bot_wallet_only", "bot_wallet_priority", "user_wallet_only"
-    ]
+    payment_method: Literal["bot_wallet_only"]
     amount: int = 1
     rid: str | None = None
 

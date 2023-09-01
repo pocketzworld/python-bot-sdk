@@ -173,10 +173,17 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                                 return
                             msg: IncomingEvents = converter.loads(frame.data, Incoming)  # type: ignore
                             match msg:
-                                case Error(message=error, rid=None):
+                                case Error(
+                                    message=error,
+                                    rid=None,
+                                    do_not_reconnect=dont_reconnect,
+                                ):
                                     print(
                                         f"ERROR: {error} closing connection with ID: {session_metadata.connection_id}"
                                     )
+                                    if dont_reconnect:
+                                        ka_task.cancel()
+                                        return
                                     raise ConnectionResetError
                                 case object(rid=rid) if hasattr(msg, "rid"):  # type: ignore
                                     if rid not in chat._req_id_registry:

@@ -334,9 +334,7 @@ class Highrise:
 
     async def buy_voice_time(
         self,
-        payment: Literal[
-            "bot_wallet_only", "bot_wallet_priority", "user_wallet_only"
-        ] = "bot_wallet_only",
+        payment: Literal["bot_wallet_only"] = "bot_wallet_only",
     ) -> Literal["success", "insufficient_funds", "only_token_bought"] | Error:
         """Buy voice time."""
         res = await do_req_resp(self, BuyVoiceTimeRequest(payment))
@@ -346,9 +344,7 @@ class Highrise:
 
     async def buy_room_boost(
         self,
-        payment: Literal[
-            "bot_wallet_only", "bot_wallet_priority", "user_wallet_only"
-        ] = "bot_wallet_only",
+        payment: Literal["bot_wallet_only"] = "bot_wallet_only",
         amount: int = 1,
     ) -> Literal["success", "insufficient_funds", "only_token_bought"] | Error:
         """Buy room boost."""

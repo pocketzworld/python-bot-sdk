@@ -32,6 +32,11 @@ $ highrise mybot:Bot <room ID> <API token>
 
 ## Changelog
 
+### 23.3.4 (2023-08-11)
+
+- Support for multiple rooms.
+- Removed deprecated options in buy_room_boost and buy_voice_time.
+
 ### 23.3.3 (2023-08-11)
 
 - Change webapi model for User to match the one used in game.
