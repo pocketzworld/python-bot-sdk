@@ -250,7 +250,6 @@ class Highrise:
                         }
                         json.dump(data, file)
                 if isinstance(pos, Position):
-                    print(self.my_id)
                     await self.teleport(self.my_id, pos)
                     await self.walk_to(pos)
                 else:
