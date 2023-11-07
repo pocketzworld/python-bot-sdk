@@ -1,6 +1,7 @@
 """The Highrise bot SDK."""
 from __future__ import annotations
 
+import json
 from asyncio import Queue, sleep
 from collections import Counter
 from itertools import count
@@ -226,6 +227,38 @@ class Highrise:
 
     async def teleport(self, user_id: str, dest: Position) -> None:
         await _do_req_no_resp(self, TeleportRequest(user_id, dest))
+        
+    async def set_position(self, user: User) -> None:
+        """Sets the bot position to the user's position"""
+        room_users = (await self.get_room_users()).content
+        for room_user, pos in room_users:
+            if room_user == user:
+                if isinstance(pos, Position):
+                    with open("config.json", "w") as file:
+                        data = {
+                            "x": pos.x,
+                            "y": pos.y,
+                            "z": pos.z,
+                            "facing": pos.facing
+                        }
+                        json.dump(data, file)
+                if isinstance(pos, AnchorPosition):
+                    with open("config.json", "w") as file:
+                        data = {
+                            "entity_id": pos.entity_id,
+                            "anchor_ix": pos.anchor_ix
+                        }
+                        json.dump(data, file)
+                if isinstance(pos, Position):
+                    print(self.my_id)
+                    await self.teleport(self.my_id, pos)
+                    await self.walk_to(pos)
+                else:
+                    try:
+                        await self.walk_to(pos)
+                    except:
+                        return await self.chat("Position not found!")
+                return await self.chat(f"Position set to {pos}!")
 
     async def get_room_users(self) -> GetRoomUsersRequest.GetRoomUsersResponse | Error:
         req_id = str(next(self._req_id))
