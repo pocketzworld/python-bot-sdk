@@ -503,9 +503,6 @@ async def _delayed_callback(callback: Callable, delay: float) -> None:
     await sleep(delay)
     await callback()
 
-async def restart(hr: Highrise) -> None:
-    await hr.ws.close()
-
 converter = make_converter()
 
 Outgoing = (
