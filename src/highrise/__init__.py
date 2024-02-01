@@ -233,8 +233,12 @@ class Highrise:
         room_users = (await self.get_room_users()).content
         for room_user, pos in room_users:
             if room_user == user:
+                # Checks if there's a data folder, if not, creates one
+                import os
+                if not os.path.exists("data"):
+                    os.makedirs("data")
                 if isinstance(pos, Position):
-                    with open("config.json", "w") as file:
+                    with open("data/config.json", "w") as file:
                         data = {
                             "x": pos.x,
                             "y": pos.y,
@@ -243,7 +247,7 @@ class Highrise:
                         }
                         json.dump(data, file)
                 if isinstance(pos, AnchorPosition):
-                    with open("config.json", "w") as file:
+                    with open("data/config.json", "w") as file:
                         data = {
                             "entity_id": pos.entity_id,
                             "anchor_ix": pos.anchor_ix
