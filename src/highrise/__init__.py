@@ -281,7 +281,7 @@ class Highrise:
 
         result = search_file(root_directory, file_to_find)
         if result:
-            data = json.load(file)
+            data = json.load(result)
             if "entity_id" in data:
                 await self.walk_to(AnchorPosition(data["entity_id"], data["anchor_ix"]))
             else:
