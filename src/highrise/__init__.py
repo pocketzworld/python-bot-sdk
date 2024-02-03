@@ -269,21 +269,29 @@ class Highrise:
         """Defines the Bot's position based on a config.json file."""
         # Walks for all folders checking the existence of a config.json file in the directory
         import os
-        for root, dirs, files in os.walk("."):
-            for file in files:
-                if file.endswith(".json"):
-                    if file == "config.json":
-                        with open("config.json", "r") as file:
-                            data = json.load(file)
-                            if "entity_id" in data:
-                                await self.walk_to(AnchorPosition(data["entity_id"], data["anchor_ix"]))
-                            else:
-                                await self.teleport(self.my_id, Position(data["x"], data["y"], data["z"], data["facing"]))
-                                await self.walk_to(Position(data["x"], data["y"], data["z"], data["facing"]))
-                            await self.chat(f"Position set to {data}!")
-                            return
-        await self.chat("No config.json file found")
-        return
+        def search_file(root_dir, filename):
+            for dirpath, _, filenames in os.walk(root_dir):
+                if filename in filenames:
+                    return os.path.join(dirpath, filename)
+            return None
+
+        # Get the current working directory
+        root_directory = os.getcwd()
+        file_to_find = "config.json"
+
+        result = search_file(root_directory, file_to_find)
+        if result:
+            data = json.load(file)
+            if "entity_id" in data:
+                await self.walk_to(AnchorPosition(data["entity_id"], data["anchor_ix"]))
+            else:
+                await self.teleport(self.my_id, Position(data["x"], data["y"], data["z"], data["facing"]))
+                await self.walk_to(Position(data["x"], data["y"], data["z"], data["facing"]))
+            await self.chat(f"Position set to {data}!")
+            return
+        else:
+            await self.chat("No config.json file found")
+            return
 
     async def get_room_users(self) -> GetRoomUsersRequest.GetRoomUsersResponse | Error:
         req_id = str(next(self._req_id))
