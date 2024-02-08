@@ -248,7 +248,7 @@ class Highrise:
                         json.dump(data, file)
                         await self.teleport(self.my_id, pos)
                         await self.walk_to(pos)
-                        await self.chat(f"Position set to {data["x"]}, {data["y"]}, {data["z"]}!")
+                        await self.chat(f"Position set to {pos.x}, {pos.y}, {pos.z}!")
                 if isinstance(pos, AnchorPosition):
                     with open("data/config.json", "w") as file:
                         data = {
@@ -280,11 +280,10 @@ class Highrise:
                 data = json.load(file)
             if "entity_id" in data:
                 await self.walk_to(AnchorPosition(data["entity_id"], data["anchor_ix"]))
-                await self.chat(f"Position set to furniture!")
             else:
                 await self.teleport(self.my_id, Position(data["x"], data["y"], data["z"], data["facing"]))
                 await self.walk_to(Position(data["x"], data["y"], data["z"], data["facing"]))
-                await self.chat(f"Position set to {data["x"]}, {data["y"]}, {data["z"]}!")
+            await self.chat(f"Position loaded!")
             return
         else:
             await self.chat("No config.json file found")
