@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, TypeVar, Uni
 from aiohttp import ClientWebSocketResponse
 from cattrs.preconf.json import make_converter
 from quattro import TaskGroup
+import pickle as pkl
 
 from ._unions import configure_tagged_union
 from .models import (
@@ -233,46 +234,25 @@ class Highrise:
         room_users = (await self.get_room_users()).content
         for room_user, pos in room_users:
             if room_user == user:
-                # Checks if there's a data folder, if not, creates one
-                import os
-                if not os.path.exists("data"):
-                    os.makedirs("data")
-                if isinstance(pos, Position):
-                    with open("data/config.json", "w") as file:
-                        data = {
-                            "x": pos.x,
-                            "y": pos.y,
-                            "z": pos.z,
-                            "facing": pos.facing
-                        }
-                        json.dump(data, file)
-                        await self.teleport(self.my_id, pos)
-                        await self.walk_to(pos)
-                        await self.chat(f"Position set to {pos.x}, {pos.y}, {pos.z}!")
+                pkl.dump(pos, open(f'data/{self.my_id}_position.pkl', 'wb'))
                 if isinstance(pos, AnchorPosition):
-                    with open("data/config.json", "w") as file:
-                        data = {
-                            "entity_id": pos.entity_id,
-                            "anchor_ix": pos.anchor_ix
-                        }
-                        json.dump(data, file)
-                        await self.walk_to(pos)
-                        await self.chat(f"Position set to furniture!")
-                return 
+                    await self.walk_to(pos)
+                else:
+                    await self.teleport(self.my_id, pos)
+                    await self.walk_to(pos)
 
     async def load_position(self) -> None:
         """Defines the Bot's position based on a config.json file."""
-        # Walks for all folders checking the existence of a config.json file in the directory
-        import os
-        def search_file(root_dir, filename):
-            for dirpath, _, filenames in os.walk(root_dir):
-                if filename in filenames:
-                    return os.path.join(dirpath, filename)
-            return None
-
-        # Get the current working directory
-        root_directory = os.getcwd()
-        file_to_find = "config.json"
+        try:
+            pos = pkl.load(open(f'data/{self.my_id}_position.pkl', 'rb'))
+            if isinstance(pos, AnchorPosition):
+                await self.walk_to(pos)
+            else:
+                await self.teleport(self.my_id, pos)
+                await self.walk_to(pos)
+            return
+        except:
+            return 
 
         result = search_file(root_directory, file_to_find)
         if result:
