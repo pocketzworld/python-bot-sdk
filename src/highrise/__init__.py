@@ -254,21 +254,6 @@ class Highrise:
         except:
             return 
 
-        result = search_file(root_directory, file_to_find)
-        if result:
-            with open(result, "r") as file:
-                data = json.load(file)
-            if "entity_id" in data:
-                await self.walk_to(AnchorPosition(data["entity_id"], data["anchor_ix"]))
-            else:
-                await self.teleport(self.my_id, Position(data["x"], data["y"], data["z"], data["facing"]))
-                await self.walk_to(Position(data["x"], data["y"], data["z"], data["facing"]))
-            await self.chat(f"Position loaded!")
-            return
-        else:
-            await self.chat("No config.json file found")
-            return
-
     async def get_room_users(self) -> GetRoomUsersRequest.GetRoomUsersResponse | Error:
         req_id = str(next(self._req_id))
         self._req_id_registry[req_id] = (q := Queue[Any](maxsize=1))
