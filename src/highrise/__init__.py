@@ -257,6 +257,7 @@ class BaseBot:
             #the category of the item in an outfit can be found by the first string in the id before the "-" character
             item_category = outfit_item.id.split("-")[0]
             if item_category == category:
+                print(item_category)
                 items_to_remove.append(outfit_item)
         for item_to_remove in items_to_remove:
             outfit.remove(item_to_remove)
@@ -268,6 +269,11 @@ class BaseBot:
                             id = hair_back_id, 
                             account_bound=False,
                             active_palette=color,)
+            for outfit_item in outfit:
+                #the category of the item in an outfit can be found by the first string in the id before the "-" character
+                item_category = outfit_item.id.split("-")[0]
+                if item_category == "hair_back":
+                    outfit.remove(outfit_item)
             outfit.append(hair_back)
         outfit.append(new_item)
         await self.highrise.set_outfit(outfit)
@@ -283,8 +289,10 @@ class BaseBot:
             return
         outfit = (await self.highrise.get_my_outfit()).outfit
         for outfit_item in outfit:
-            if outfit_item.id == "body":
+            if outfit_item.id == "body-flesh":
                 outfit_item.active_palette = color
+                break
+        print(outfit)
         response = await self.highrise.set_outfit(outfit)
         print(response)
 
