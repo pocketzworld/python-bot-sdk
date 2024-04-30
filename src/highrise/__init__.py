@@ -178,8 +178,32 @@ class BaseBot:
         """When room moderation event is triggered."""
         pass
 
-    async def equip(self: BaseBot, user: User, item_name: str, color: str, index : int = 0):
-        """Message has """
+    async def equip(self: BaseBot, user: User, message: str):
+        if len(message) < 2:
+            return
+        item = " ".join(message[1:]) 
+        color = None
+        for m in message:
+            if m.isdigit():
+                color = int(m)
+                item = item.replace(str(color), "")
+                break
+        if not color:
+            color = 0
+        index = None
+        for m in message:
+            if "[" in m and "]" in m:
+                index = int(m[1:-1])
+                print(item)
+                print(index)
+                item = item.replace(f"[]", "")
+                print(item)
+                break
+        if not index:
+            index = 0
+        if item[-1] == " ":
+            item = item[:-1]
+        item_name = item
         #check if the last part of the message is a number
         item = (await self.webapi.get_items(item_name = item_name)).items
         #checks if the response is valid
@@ -192,7 +216,6 @@ class BaseBot:
         item_id = item.item_id
         category = item.category
         #--------------------------------------------------------#
-        
         verification = False
         #checks if the bot has the item
         inventory = (await self.highrise.get_inventory()).items
@@ -220,22 +243,20 @@ class BaseBot:
                     print(e)
                     await self.highrise.chat(f"Exception: {e}'.")
                     return
-                
         #--------------------------------------------------------#
         new_item = Item(type = "clothing",
                     amount = 1,
                     id = item_id, 
                     account_bound=False,
-                    active_palette=0,)
+                    active_palette=color,)
         #--------------------------------------------------------#
         #checks if the item category is already in use
         outfit = (await self.highrise.get_my_outfit()).outfit
         items_to_remove = []
         for outfit_item in outfit:
             #the category of the item in an outfit can be found by the first string in the id before the "-" character
-            item_category = outfit_item.id.split("-")[0][0:4]
-            print(f"{item_category}")
-            if item_category == category[0:4]:
+            item_category = outfit_item.id.split("-")[0]
+            if item_category == category:
                 items_to_remove.append(outfit_item)
         for item_to_remove in items_to_remove:
             outfit.remove(item_to_remove)
@@ -246,10 +267,50 @@ class BaseBot:
                             amount = 1,
                             id = hair_back_id, 
                             account_bound=False,
-                            active_palette=0,)
+                            active_palette=color,)
             outfit.append(hair_back)
         outfit.append(new_item)
         await self.highrise.set_outfit(outfit)
+        await self.highrise.chat(f"Item '{item_name}' equipped.")
+
+    async def change_skin_tone(self: BaseBot, user: User, message: str):
+        if len(message) < 2:
+            return
+        try:
+            color = int(message[1])
+        except:
+            await self.highrise.chat("Invalid color.")
+            return
+        outfit = (await self.highrise.get_my_outfit()).outfit
+        for outfit_item in outfit:
+            if outfit_item.id == "body":
+                outfit_item.active_palette = color
+        response = await self.highrise.set_outfit(outfit)
+        print(response)
+
+    async def remove(self: BaseBot, user: User, message: str):
+            categories = ["aura","bag","blush","body","dress","earrings","emote","eye","eyebrow","fishing_rod","freckle","fullsuit","glasses",
+"gloves","hair_back","hair_front","handbag","hat","jacket","lashes","mole","mouth","necklace","nose","pants","rod","shirt","shoes",
+"shorts","skirt","sock","tattoo","watch"]
+            if len(message) != 2:
+                await self.highrise.chat("Invalid command format. You need to specify the category.")
+                return
+            if message[1] not in categories:
+                await self.highrise.chat("Invalid category.")
+                return
+            category = message[1].lower()
+            outfit = (await self.highrise.get_my_outfit()).outfit
+            for outfit_item in outfit:
+                #the category of the item in an outfit can be found by the first string in the id before the "-" character
+                item_category = outfit_item.id.split("-")[0]
+                if item_category == category:
+                    try:
+                        outfit.remove(outfit_item)
+                    except:
+                        await self.highrise.chat(f"The bot isn't using any item from the category '{category}'.")
+                        return
+            response = await self.highrise.set_outfit(outfit)
+            print(response)
 
 
 class Highrise:
