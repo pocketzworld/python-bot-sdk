@@ -167,7 +167,7 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                                 )
                                 # Close frame
                                 ka_task.cancel()
-                                return
+                                raise ConnectionResetError
                             if isinstance(frame.data, WebSocketError):
                                 print("Websocket error, exiting.")
                                 return

@@ -1,6 +1,7 @@
 """The Highrise bot SDK."""
 from __future__ import annotations
 
+import json
 from asyncio import Queue, sleep
 from collections import Counter
 from itertools import count
@@ -9,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, TypeVar, Uni
 from aiohttp import ClientWebSocketResponse
 from cattrs.preconf.json import make_converter
 from quattro import TaskGroup
+import pickle as pkl
 
 from ._unions import configure_tagged_union
 from .models import (
@@ -66,6 +68,7 @@ from .models import (
     VoiceEvent,
 )
 from .webapi import WebAPI
+from .models_webapi import Rarity
 
 if TYPE_CHECKING:
     from attrs import AttrsInstance
@@ -176,6 +179,125 @@ class BaseBot:
         """When room moderation event is triggered."""
         pass
 
+    async def equip(self: BaseBot, user: User, message: str) -> Error|None:
+        if len(message) < 2:
+            return Error("Invalid command format. You need to specify the item.")
+        item = " ".join(message[1:]) 
+        color = None
+        for m in message:
+            if m.isdigit():
+                color = int(m)
+                item = item.replace(str(color), "")
+                break
+        if not color:
+            color = 0
+        index = None
+        for m in message:
+            if "[" in m and "]" in m:
+                index = int(m[1:-1])
+                item = item.replace(f"[]", "")
+                break
+        if not index:
+            index = 0
+        if item[-1] == " ":
+            item = item[:-1]
+        item_name = item
+        item = (await self.webapi.get_items(item_name = item_name)).items
+        if item == []:
+            await self.highrise.chat(f"Item '{item_name}' not found.")
+            return Error(f"Item '{item_name}' not found.")
+        elif len(item) > 1:
+            await self.highrise.chat(f"Multiple items found for '{item_name}', using the item number {index} in the list {item[index].item_name}.")
+        item = item[index]
+        item_id = item.item_id
+        category = item.category
+        verification = False
+        inventory = (await self.highrise.get_inventory()).items
+        for inventory_item in inventory:
+            if inventory_item.id == item_id:
+                verification = True
+                break
+        if verification == False:
+            if item.rarity == Rarity.NONE:
+                pass
+            elif item.is_purchasable == False:
+                await self.highrise.chat(f"Item '{item_name}' can't be purchased.")
+                return Error(f"Item '{item_name}' can't be purchased.")
+            else:
+                try:
+                    response = await self.highrise.buy_item(item_id)
+                    if response != "success":
+                        await self.highrise.chat(f"Item '{item_name}' can't be purchased.")
+                        return Error(f"Item '{item_name}' can't be purchased.")
+                    else:
+                        await self.highrise.chat(f"Item '{item_name}' purchased.")
+                except Exception as e:
+                    await self.highrise.chat(f"Exception: {e}'.")
+                    return Error(f"Exception: {e}'.")
+        new_item = Item(type = "clothing",
+                    amount = 1,
+                    id = item_id, 
+                    account_bound=False,
+                    active_palette=color,)
+        outfit = (await self.highrise.get_my_outfit()).outfit
+        items_to_remove = []
+        for outfit_item in outfit:
+            item_category = outfit_item.id.split("-")[0]
+            if item_category == category:
+                items_to_remove.append(outfit_item)
+        for item_to_remove in items_to_remove:
+            outfit.remove(item_to_remove)
+        if category == "hair_front":
+            hair_back_id = item.link_ids[0]
+            hair_back = Item(type = "clothing",
+                            amount = 1,
+                            id = hair_back_id, 
+                            account_bound=False,
+                            active_palette=color,)
+            for outfit_item in outfit:
+                item_category = outfit_item.id.split("-")[0]
+                if item_category == "hair_back":
+                    outfit.remove(outfit_item)
+            outfit.append(hair_back)
+        outfit.append(new_item)
+        await self.highrise.set_outfit(outfit)
+        await self.highrise.chat(f"Item '{item_name}' equipped.")
+        return
+
+    async def change_skin_tone(self: BaseBot, user: User, message: str) -> Error|None:
+        if len(message) < 2:
+            return Error("Invalid command format. You need to specify the color.")
+        try:
+            color = int(message[1])
+        except:
+            return Error("Invalid color.")
+        outfit = (await self.highrise.get_my_outfit()).outfit
+        for outfit_item in outfit:
+            if outfit_item.id == "body-flesh":
+                outfit_item.active_palette = color
+                break
+        return await self.highrise.set_outfit(outfit)
+
+    async def remove(self: BaseBot, user: User, message: str) -> Error|None:
+            categories = ["aura","bag","blush","body","dress","earrings","emote","eye","eyebrow","fishing_rod","freckle","fullsuit","glasses",
+"gloves","hair_back","hair_front","handbag","hat","jacket","lashes","mole","mouth","necklace","nose","pants","rod","shirt","shoes",
+"shorts","skirt","sock","tattoo","watch"]
+            if len(message) != 2:
+                return Error("Invalid command format. You need to specify the category.")
+            if message[1] not in categories:
+                return Error("Invalid category.")
+            category = message[1].lower()
+            outfit = (await self.highrise.get_my_outfit()).outfit
+            for outfit_item in outfit:
+                #the category of the item in an outfit can be found by the first string in the id before the "-" character
+                item_category = outfit_item.id.split("-")[0]
+                if item_category == category:
+                    try:
+                        outfit.remove(outfit_item)
+                    except:
+                        return Error(f"The bot isn't using any item from the category '{category}'.")
+            return await self.highrise.set_outfit(outfit)
+
 
 class Highrise:
     my_id: str
@@ -227,6 +349,74 @@ class Highrise:
 
     async def teleport(self, user_id: str, dest: Position) -> None:
         await _do_req_no_resp(self, TeleportRequest(user_id, dest))
+        
+    async def set_position(self, user: User) -> None:
+        """Sets the bot position to the user's position"""
+        room_users = (await self.get_room_users()).content
+        for room_user, pos in room_users:
+            if room_user == user:
+                pkl.dump(pos, open(f'data/{self.my_id}_position.pkl', 'wb'))
+                if isinstance(pos, AnchorPosition):
+                    await self.walk_to(pos)
+                else:
+                    await self.teleport(self.my_id, pos)
+                    await self.walk_to(pos)
+
+    async def load_position(self) -> None:
+        """Defines the Bot's position based on a {bot_id}_position.pkl file."""
+        try:
+            pos = pkl.load(open(f'data/{self.my_id}_position.pkl', 'rb'))
+            if isinstance(pos, AnchorPosition):
+                await self.walk_to(pos)
+            else:
+                await self.teleport(self.my_id, pos)
+                await self.walk_to(pos)
+            return
+        except:
+            return 
+
+    async def tip(self, user: User, amount: int) -> Error|None:
+        bot_wallet = await self.get_wallet()
+        bot_amount = bot_wallet.content[0].amount
+        if bot_amount <= amount:
+            await self.chat("Not enough funds")
+            return Error("Not enough funds")
+        """Possible values are: "gold_bar_1",
+        "gold_bar_5", "gold_bar_10", "gold_bar_50", 
+        "gold_bar_100", "gold_bar_500", 
+        "gold_bar_1k", "gold_bar_5000", "gold_bar_10k" """
+        bars_dictionary = {10000: "gold_bar_10k", 
+                            5000: "gold_bar_5000",
+                            1000: "gold_bar_1k",
+                            500: "gold_bar_500",
+                            100: "gold_bar_100",
+                            50: "gold_bar_50",
+                            10: "gold_bar_10",
+                            5: "gold_bar_5",
+                            1: "gold_bar_1"}
+        fees_dictionary = {10000: 1000,
+                            5000: 500,
+                            1000: 100,
+                            500: 50,
+                            100: 10,
+                            50: 5,
+                            10: 1,
+                            5: 1,
+                            1: 1}
+        tip = []
+        total = 0
+        for bar in bars_dictionary:
+            if amount >= bar:
+                bar_amount = amount // bar
+                amount = amount % bar
+                for i in range(bar_amount):
+                    tip.append(bars_dictionary[bar])
+                    total = bar+fees_dictionary[bar]
+        if total > bot_amount:
+            await self.chat("Not enough funds")
+            return Error("Not enough funds")
+        for bar in tip:
+            await self.tip_user(user.id, bar)
 
     async def get_room_users(self) -> GetRoomUsersRequest.GetRoomUsersResponse | Error:
         req_id = str(next(self._req_id))
@@ -473,7 +663,6 @@ async def _do_req_no_resp(hr: Highrise, req: _ReqWithId[CID]) -> None:
 async def _delayed_callback(callback: Callable, delay: float) -> None:
     await sleep(delay)
     await callback()
-
 
 converter = make_converter()
 
