@@ -710,13 +710,15 @@ class GetConversationsRequest:
 @define
 class SendMessageRequest:
     """
-    Send a message to a conversation. If bot wishes to send room invite, the room_id must be provided.
+    Send a message to a conversation. If bot wishes to send room invite, the room_id must be provided. If bot wishes to
+    send world invite, the world_id must be provided.
     """
 
     conversation_id: str
     content: str
     type: Literal["text", "invite"]
     room_id: str | None = None
+    world_id: str | None = None
     rid: str | None = None
 
     @define
@@ -724,6 +726,27 @@ class SendMessageRequest:
         rid: str | None = None
 
     Response: ClassVar = SendMessageResponse
+
+
+@define
+class SendBulkMessageRequest:
+    """
+    Send a message to a multiple users, with limit being 100. If bot wishes to send room invite, the room_id must
+    be provided. If bot wishes to send world invite, the world_id must be provided.
+    """
+
+    user_ids: list[str]
+    content: str
+    type: Literal["text", "invite"]
+    room_id: str | None = None
+    world_id: str | None = None
+    rid: str | None = None
+
+    @define
+    class SendBulkMessageResponse:
+        rid: str | None = None
+
+    Response: ClassVar = SendBulkMessageResponse
 
 
 @define
