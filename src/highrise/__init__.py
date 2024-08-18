@@ -54,6 +54,7 @@ from .models import (
     RemoveSpeakerRequest,
     RoomModeratedEvent,
     RoomPermissions,
+    SendBulkMessageRequest,
     SendMessageRequest,
     SessionMetadata,
     SetOutfitRequest,
@@ -532,11 +533,35 @@ class Highrise:
         content: str,
         message_type: Literal["text", "invite"] = "text",
         room_id: str | None = None,
-    ) -> None:
+        world_id: str | None = None,
+    ) -> None | Error:
         """Send a message to conversation."""
-        await _do_req_no_resp(
-            self, SendMessageRequest(conversation_id, content, message_type, room_id)
+        res = await do_req_resp(
+            self,
+            SendMessageRequest(
+                conversation_id, content, message_type, room_id, world_id
+            ),
         )
+        if isinstance(res, Error):
+            return res
+        return None
+
+    async def send_message_bulk(
+        self,
+        user_ids: list[str],
+        content: str,
+        message_type: Literal["text", "invite"] = "text",
+        room_id: str | None = None,
+        world_id: str | None = None,
+    ) -> None | Error:
+        """Send a message to conversation."""
+        res = await do_req_resp(
+            self,
+            SendBulkMessageRequest(user_ids, content, message_type, room_id, world_id),
+        )
+        if isinstance(res, Error):
+            return res
+        return None
 
     async def get_messages(
         self, conversation_id: str, last_id: str | None = None
@@ -699,6 +724,7 @@ Outgoing = (
     | SetOutfitRequest
     | GetInventoryRequest
     | BuyItemRequest
+    | SendBulkMessageRequest
 )
 IncomingEvents = (
     Error
