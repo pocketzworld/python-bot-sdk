@@ -96,6 +96,18 @@ class Conversation:
 
 
 @define
+class MessageMedia:
+    type: Literal["image", "gif"]
+    width: int
+    height: int
+    mediaSizeInBytes: int
+    thumbnailSizeInBytes: int
+    id: str | None = None
+    url: str | None = None
+    thumbnailUrl: str | None = None
+
+
+@define
 class Error:
     """
     The client request or parameter was invalid.
@@ -719,6 +731,7 @@ class SendMessageRequest:
     type: Literal["text", "invite"]
     room_id: str | None = None
     world_id: str | None = None
+    media_id: str | None = None
     rid: str | None = None
 
     @define
@@ -899,3 +912,22 @@ class BuyItemRequest:
         rid: str | None = None
 
     Response: ClassVar = BuyItemResponse
+
+
+@define
+class MessageMediaRequest:
+    """Create pre-signed upload URL for media."""
+
+    media: MessageMedia
+    rid: str | None = None
+
+    @define
+    class MessageMediaResponse:
+        """The response to the media request."""
+
+        media: MessageMedia
+        upload_url: str | None = None
+        thumbnail_upload_url: str | None = None
+        rid: str | None = None
+
+    Response: ClassVar = MessageMediaResponse

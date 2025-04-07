@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "highrise-bot-sdk"
-version = "24.1.0"
+version = "25.1.0rc1"
 description = "The Highrise Bot SDK, for running Highrise bots written in Python."
 authors = ["Pocket Worlds Inc <server@high.rs>"]
 license = "proprietary"

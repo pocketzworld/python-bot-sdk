@@ -43,6 +43,8 @@ from .models import (
     KeepaliveRequest,
     LeaveConversationRequest,
     MessageEvent,
+    MessageMedia,
+    MessageMediaRequest,
     ModerateRoomRequest,
     MoveUserToRoomRequest,
     Position,
@@ -429,6 +431,15 @@ class Highrise:
             return resp
         return resp.result
 
+    async def message_media_upload(
+        self, media: MessageMedia
+    ) -> tuple[MessageMedia, str, str] | Error:
+        """Upload a message media."""
+        resp = await do_req_resp(self, MessageMediaRequest(media))
+        if isinstance(resp, Error):
+            return resp
+        return resp.media, resp.upload_url, resp.thumbnail_upload_url
+
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
 
@@ -510,6 +521,7 @@ Outgoing = (
     | GetInventoryRequest
     | BuyItemRequest
     | SendBulkMessageRequest
+    | MessageMediaRequest
 )
 IncomingEvents = (
     Error
