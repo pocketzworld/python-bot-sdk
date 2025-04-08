@@ -320,12 +320,13 @@ class Highrise:
         message_type: Literal["text", "invite"] = "text",
         room_id: str | None = None,
         world_id: str | None = None,
+        media_id: str | None = None,
     ) -> None | Error:
         """Send a message to conversation."""
         res = await do_req_resp(
             self,
             SendMessageRequest(
-                conversation_id, content, message_type, room_id, world_id
+                conversation_id, content, message_type, room_id, world_id, media_id
             ),
         )
         if isinstance(res, Error):
