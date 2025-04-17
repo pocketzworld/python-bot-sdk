@@ -439,7 +439,7 @@ class Highrise:
         resp = await do_req_resp(self, MessageMediaRequest(media))
         if isinstance(resp, Error):
             return resp
-        return resp.media, resp.upload_url, resp.thumbnail_upload_url
+        return resp.media, resp.uploadUrl, resp.thumbnailUploadUrl
 
     def call_in(self, callback: Callable, delay: float) -> None:
         self.tg.create_task(_delayed_callback(callback, delay))
