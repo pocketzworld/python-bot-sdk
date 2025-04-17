@@ -317,7 +317,7 @@ class Highrise:
         self,
         conversation_id: str,
         content: str,
-        message_type: Literal["text", "invite"] = "text",
+        message_type: Literal["text", "invite", "media"] = "text",
         room_id: str | None = None,
         world_id: str | None = None,
         media_id: str | None = None,

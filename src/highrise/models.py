@@ -728,7 +728,7 @@ class SendMessageRequest:
 
     conversation_id: str
     content: str
-    type: Literal["text", "invite"]
+    type: Literal["text", "invite", "media"]
     room_id: str | None = None
     world_id: str | None = None
     media_id: str | None = None
@@ -926,8 +926,8 @@ class MessageMediaRequest:
         """The response to the media request."""
 
         media: MessageMedia
-        upload_url: str | None = None
-        thumbnail_upload_url: str | None = None
+        uploadUrl: str | None = None
+        thumbnailUploadUrl: str | None = None
         rid: str | None = None
 
     Response: ClassVar = MessageMediaResponse
