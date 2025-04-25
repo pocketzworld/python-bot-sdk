@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from asyncio import Queue, sleep
 from collections import Counter
 from itertools import count
@@ -179,90 +180,86 @@ class BaseBot:
         """When room moderation event is triggered."""
         pass
 
-    async def equip(self: BaseBot, user: User, message: str) -> Error|None:
-        if len(message) < 2:
+    async def equip(self: BaseBot, user: User, message: list[str]) -> Optional[Error]:
+        args = message[1:]
+        if not args:
             return Error("Invalid command format. You need to specify the item.")
-        item = " ".join(message[1:]) 
-        color = None
-        for m in message:
-            if m.isdigit():
-                color = int(m)
-                item = item.replace(str(color), "")
-                break
-        if not color:
-            color = 0
-        index = None
-        for m in message:
-            if "[" in m and "]" in m:
-                index = int(m[1:-1])
-                item = item.replace(f"[]", "")
-                break
-        if not index:
-            index = 0
-        if item[-1] == " ":
-            item = item[:-1]
-        item_name = item
-        item = (await self.webapi.get_items(item_name = item_name)).items
-        if item == []:
+        color = 0
+        index = 0
+        item_tokens: list[str] = []
+        for tok in args:
+            m = re.fullmatch(r'\[(\d+)\]', tok)
+            if m:
+                index = int(m.group(1))
+                continue
+            if tok.isdigit():
+                color = int(tok)
+                continue
+            item_tokens.append(tok)
+        item_name = " ".join(item_tokens).strip()
+        if not item_name:
+            return Error("Could not parse item name.")
+        items = (await self.webapi.get_items(item_name=item_name)).items
+        if not items:
             await self.highrise.chat(f"Item '{item_name}' not found.")
             return Error(f"Item '{item_name}' not found.")
-        elif len(item) > 1:
-            await self.highrise.chat(f"Multiple items found for '{item_name}', using the item number {index} in the list {item[index].item_name}.")
-        item = item[index]
+        if index >= len(items):
+            await self.highrise.chat(f"Index {index} out of range for items matching '{item_name}'.")
+            return Error(f"Index {index} out of range for '{item_name}'.")
+        if len(items) > 1:
+            chosen = items[index]
+            await self.highrise.chat(
+                f"Multiple items found for '{item_name}', using [{index}] {chosen.item_name}."
+            )
+        item = items[index]
         item_id = item.item_id
         category = item.category
-        verification = False
-        inventory = (await self.highrise.get_inventory()).items
-        for inventory_item in inventory:
-            if inventory_item.id == item_id:
-                verification = True
-                break
-        if verification == False:
-            if item.rarity == Rarity.NONE:
-                pass
-            elif item.is_purchasable == False:
+        owned_ids = {inv.id for inv in (await self.highrise.get_inventory()).items}
+        if item_id not in owned_ids:
+            if item.rarity != Rarity.NONE and item.is_purchasable:
+                resp = await self.highrise.buy_item(item_id)
+                if resp == "success":
+                    await self.highrise.chat(f"Item '{item_name}' purchased.")
+                else:
+                    await self.highrise.chat(f"Item '{item_name}' can't be purchased.")
+                    return Error(f"Buy failed for '{item_name}'.")
+            elif not item.is_purchasable:
                 await self.highrise.chat(f"Item '{item_name}' can't be purchased.")
                 return Error(f"Item '{item_name}' can't be purchased.")
-            else:
-                try:
-                    response = await self.highrise.buy_item(item_id)
-                    if response != "success":
-                        await self.highrise.chat(f"Item '{item_name}' can't be purchased.")
-                        return Error(f"Item '{item_name}' can't be purchased.")
-                    else:
-                        await self.highrise.chat(f"Item '{item_name}' purchased.")
-                except Exception as e:
-                    await self.highrise.chat(f"Exception: {e}'.")
-                    return Error(f"Exception: {e}'.")
-        new_item = Item(type = "clothing",
-                    amount = 1,
-                    id = item_id, 
-                    account_bound=False,
-                    active_palette=color,)
+        new_item = Item(
+            type="clothing",
+            amount=1,
+            id=item_id,
+            account_bound=False,
+            active_palette=color,
+        )
         outfit = (await self.highrise.get_my_outfit()).outfit
-        items_to_remove = []
-        for outfit_item in outfit:
-            item_category = outfit_item.id.split("-")[0]
-            if item_category == category:
-                items_to_remove.append(outfit_item)
-        for item_to_remove in items_to_remove:
-            outfit.remove(item_to_remove)
-        if category == "hair_front":
-            hair_back_id = item.link_ids[0]
-            hair_back = Item(type = "clothing",
-                            amount = 1,
-                            id = hair_back_id, 
-                            account_bound=False,
-                            active_palette=color,)
-            for outfit_item in outfit:
-                item_category = outfit_item.id.split("-")[0]
-                if item_category == "hair_back":
-                    outfit.remove(outfit_item)
-            outfit.append(hair_back)
+        outfit = [
+            outf
+            for outf in outfit
+            if outf.id.split("-")[0] != category
+        ]
+        if category == "hair_front" and item.link_ids:
+            outfit = [
+                outf
+                for outf in outfit
+                if outf.id.split("-")[0] != "hair_back"
+            ]
+            back_id = item.link_ids[0]
+            outfit.append(
+                Item(
+                    type="clothing",
+                    amount=1,
+                    id=back_id,
+                    account_bound=False,
+                    active_palette=color,
+                )
+            )
         outfit.append(new_item)
         await self.highrise.set_outfit(outfit)
         await self.highrise.chat(f"Item '{item_name}' equipped.")
-        return
+        return None
+
 
     async def change_skin_tone(self: BaseBot, user: User, message: str) -> Error|None:
         if len(message) < 2:
