@@ -119,6 +119,7 @@ class Rarity(str, Enum):
     RARE = "rare"
     EPIC = "epic"
     LEGENDARY = "legendary"
+    MYTHICAL = "mythical"
     NONE = "none_"
 
 
