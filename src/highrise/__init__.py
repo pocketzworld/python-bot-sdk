@@ -199,7 +199,7 @@ class BaseBot:
         item_name = " ".join(item_tokens).strip()
         if not item_name:
             return Error("Could not parse item name.")
-        items = (await self.webapi.get_items(item_name=item_name)).items
+        items = (await self.webapi.get_items(item_name=item_name, limit=100)).items
         if not items:
             await self.highrise.chat(f"Item '{item_name}' not found.")
             return Error(f"Item '{item_name}' not found.")
@@ -208,9 +208,22 @@ class BaseBot:
             return Error(f"Index {index} out of range for '{item_name}'.")
         if len(items) > 1:
             chosen = items[index]
-            await self.highrise.chat(
-                f"Multiple items found for '{item_name}', using [{index}] {chosen.item_name}."
-            )
+            await self.highrise.chat(f"Multiple items found for '{item_name}':")
+            max_length = 255
+            current_message = ""
+            for i, item in enumerate(items):
+                item_str = f"[{i}] {item.item_name}"
+                if len(current_message) + len(item_str) + 1 > max_length:  # +1 for newline
+                    await self.highrise.chat(current_message)
+                    current_message = item_str
+                else:
+                    if current_message:
+                        current_message += "\n" + item_str
+                    else:
+                        current_message = item_str
+            if current_message:
+                await self.highrise.chat(current_message)
+            await self.highrise.chat(f"Using [{index}] {chosen.item_name}.")
         item = items[index]
         item_id = item.item_id
         category = item.category
