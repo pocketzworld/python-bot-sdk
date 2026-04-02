@@ -163,11 +163,10 @@ async def bot_runner(bot: BaseBot, room_id: str, api_key: str) -> None:
                             frame = await ws.receive(READ_TIMEOUT)
                             if frame.type in [WSMsgType.CLOSE, WSMsgType.CLOSED]:
                                 print(
-                                    f"ERROR connection with ID: {session_metadata.connection_id} closed."
+                                    f"Connection with ID: {session_metadata.connection_id} closed by server, reconnecting."
                                 )
-                                # Close frame
                                 ka_task.cancel()
-                                return
+                                raise ConnectionResetError
                             if isinstance(frame.data, WebSocketError):
                                 print("Websocket error, exiting.")
                                 return
@@ -357,10 +356,10 @@ async def control_runner(bot_cls: type[BaseBot], room_id: str, api_key: str) -> 
                         frame = await ws.receive(READ_TIMEOUT)
                         if frame.type in [WSMsgType.CLOSE, WSMsgType.CLOSED]:
                             print(
-                                f"ERROR connection with ID: {session_metadata.connection_id} closed."
+                                f"Connection with ID: {session_metadata.connection_id} closed by server, reconnecting."
                             )
                             ka_task.cancel()
-                            return
+                            break
                         if isinstance(frame.data, WebSocketError):
                             print("Websocket error, exiting.")
                             ka_task.cancel()
