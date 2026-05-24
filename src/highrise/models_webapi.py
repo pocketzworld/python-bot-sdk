@@ -13,14 +13,6 @@ class GetPublicUserResponse:
 
 
 @define
-class GetPublicUsersResponse:
-    users: list[UserBasic]
-    total: int
-    first_id: str
-    last_id: str
-
-
-@define
 class GetPublicRoomResponse:
     room: Room
 
@@ -119,6 +111,7 @@ class Rarity(str, Enum):
     RARE = "rare"
     EPIC = "epic"
     LEGENDARY = "legendary"
+    MYTHICAL = "mythical"
     NONE = "none_"
 
 
@@ -200,18 +193,6 @@ class User:
     crew: Optional[Crew]
     voice_enabled: bool
     discord_id: str | None = None
-
-
-@define
-class UserBasic:
-    user_id: str
-    username: str | None = None
-    created_at: str | None = None
-    joined_at: str | None = None
-    last_connect_at: str | None = None
-    last_activity_at: str | None = None
-    banned_until: str | None = None
-    banned: bool = False
 
 
 @define

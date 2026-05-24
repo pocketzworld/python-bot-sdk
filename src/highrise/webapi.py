@@ -15,7 +15,6 @@ from .models_webapi import (
     GetPublicRoomResponse,
     GetPublicRoomsResponse,
     GetPublicUserResponse,
-    GetPublicUsersResponse,
     ItemCategory,
 )
 
@@ -29,7 +28,7 @@ class WebAPI:
     """A class for interacting with the Highrise Web API.
 
     This class provides asynchronous methods for fetching data from the Highrise API.
-    It supports fetching single and multiple users, rooms, and posts.
+    It supports fetching users, rooms, posts, items, and grabs.
 
     Each method corresponds to a specific endpoint on the Highrise API, and returns a
     structured response based on the response JSON and webapi models.
@@ -38,45 +37,16 @@ class WebAPI:
     url: str = environ.get("HR_WEBAPI_URL", "https://webapi.highrise.game")
 
     async def get_user(self, user_id: str) -> GetPublicUserResponse:
-        """Fetch a single user given its user_id.
+        """Fetch a single user given a username or user_id.
 
         Args:
-            user_id: The unique identifier for a user.
+            user_id: The username or unique identifier for a user.
 
         Returns:
             GetPublicUserResponse: The public data of the user.
         """
         endpoint = f"/users/{user_id}"
         return await self.send_request(endpoint, GetPublicUserResponse)
-
-    async def get_users(
-        self,
-        starts_after: str | None = None,
-        ends_before: str | None = None,
-        sort_order: SORT_OPTION = "desc",
-        limit: int = 20,
-        username: str | None = None,
-    ) -> GetPublicUsersResponse:
-        """Fetch a list of users, can be filtered, ordered, and paginated.
-
-        Args:
-            username: The username of a user.
-
-        Returns:
-            GetPublicUsersResponse: A list of public data of users.
-        """
-        params = {
-            "starts_after": starts_after,
-            "ends_before": ends_before,
-            "sort_order": sort_order,
-            "limit": limit,
-            "username": username,
-        }
-
-        params = {k: v for k, v in params.items() if v is not None}
-
-        endpoint = f"/users?{'&'.join(f'{k}={v}' for k, v in params.items())}"
-        return await self.send_request(endpoint, GetPublicUsersResponse)
 
     async def get_room(self, room_id: str) -> GetPublicRoomResponse:
         """Fetch a single room given its room_id.
